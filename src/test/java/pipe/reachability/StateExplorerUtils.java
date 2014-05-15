@@ -13,7 +13,7 @@ import uk.ac.imperial.io.StateWriter;
  */
 public interface StateExplorerUtils {
 
-    StateProcessor getTangibleStateExplorer(StateWriter stateWriter, Output outputStream);
+    StateProcessor getTangibleStateExplorer(StateWriter stateWriter, Output transitionStream, Output stateStream);
     VanishingExplorer getVanishingExplorer(ExplorerUtilities explorerUtilities);
 
 }

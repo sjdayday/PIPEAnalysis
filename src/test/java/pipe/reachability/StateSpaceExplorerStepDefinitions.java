@@ -1,22 +1,11 @@
 package pipe.reachability;
 
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import pipe.reachability.algorithm.CachingExplorerUtilities;
-import pipe.reachability.algorithm.ExplorerUtilities;
 import pipe.reachability.algorithm.TimelessTrapException;
-import pipe.reachability.algorithm.VanishingExplorer;
-import pipe.reachability.algorithm.sequential.SequentialStateSpaceExplorer;
-import pipe.reachability.algorithm.state.StateSpaceExplorer;
-import uk.ac.imperial.io.EntireStateReader;
-import uk.ac.imperial.io.KryoStateIO;
-import uk.ac.imperial.io.MultiStateReader;
-import uk.ac.imperial.io.StateProcessor;
 import uk.ac.imperial.pipe.exceptions.PetriNetComponentNotFoundException;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.parsers.UnparsableException;
@@ -26,8 +15,6 @@ import uk.ac.imperial.utils.StateUtils;
 import utils.Utils;
 
 import javax.xml.bind.JAXBException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +31,12 @@ public class StateSpaceExplorerStepDefinitions {
     /**
      * State space exploration results
      */
-    private Map<ClassifiedState, Map<ClassifiedState, Double>> results = new HashMap<>();
+    private Map<Integer, Map<Integer, Double>> results = new HashMap<>();
+
+    /**
+     * Record of state to integer representation
+     */
+    private Map<ClassifiedState, Integer> stateMappings = new HashMap<>();
 
     /**
      * Set to true if timeless trap is thrown
@@ -83,31 +75,20 @@ public class StateSpaceExplorerStepDefinitions {
 
     @When("^I generate the exploration graph$")
     public void I_generate_the_exploration_graph() throws IOException, ExecutionException, InterruptedException {
-
-        KryoStateIO kryoIo = new KryoStateIO();
-        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
-            try (Output outputStream = new Output(byteStream)) {
-
-
-                StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, outputStream);
-                ExplorerUtilities explorerUtilities = new CachingExplorerUtilities(petriNet);
-                VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
-
-                StateSpaceExplorer stateSpaceExplorer =
-                        new SequentialStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor);
-                processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState());
-            } catch (TimelessTrapException e) {
-                timelessTrap = true;
+        try {
+            Utils.StateSpaceResult result = Utils.performStateSpaceExplore(utils, petriNet);
+            processedTransitons = result.processedTransitions;
+            for (Record record : result.results) {
+                results.put(record.state, record.successors);
             }
-            try (ByteArrayInputStream byteInputStream = new ByteArrayInputStream(byteStream.toByteArray());
-                 Input inputStream = new Input(byteInputStream)) {
-                MultiStateReader reader = new EntireStateReader(kryoIo);
-                for (Record record : reader.readRecords(inputStream)) {
-                    results.put(record.state, record.successors);
-                }
+
+            for (Map.Entry<Integer, ClassifiedState> entry : result.states.entrySet()) {
+                stateMappings.put(entry.getValue(), entry.getKey());
             }
+
+        } catch (TimelessTrapException e) {
+            timelessTrap = true;
         }
-
     }
 
     @Then("^I expect to see (\\d+) state transitions?")
@@ -127,8 +108,10 @@ public class StateSpaceExplorerStepDefinitions {
 
     @And("^rate (\\d+.\\d+)")
     public void rate(double rate) {
-        Map<ClassifiedState, Double> successors = results.get(state);
-        Double actualRate = successors.get(successor);
+        int stateId = stateMappings.get(state);
+        int successorId = stateMappings.get(successor);
+        Map<Integer, Double> successors = results.get(stateId);
+        Double actualRate = successors.get(successorId);
         assertNotNull("State transition not contained in results", actualRate);
         assertEquals("State transition rate not correct", rate, actualRate, 0.00001);
     }

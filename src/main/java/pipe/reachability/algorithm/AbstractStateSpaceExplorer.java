@@ -55,6 +55,11 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      */
     public int processedCount = 0;
 
+    /**
+     * This value is used to give a unique number to each state seen
+     */
+    private int stateCount = 0;
+
     public AbstractStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                       StateProcessor stateProcessor) {
         this.explorerUtilities = explorerUtilities;
@@ -117,9 +122,24 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      *
      * @param state state that has been explored
      */
-    //TODO: IMPLEMENT COMPRESSED VERSION
     protected void markAsExplored(ClassifiedState state) {
-        explored.add(state);
+        int uniqueNumber = getUniqueStateNumber();
+        explored.add(state, uniqueNumber);
+    }
+
+    /**
+     * Marks each state in explored as explored if it is not already in the explored set.
+     *
+     * It must do the contains check to ensure it does not get two different unique numbers
+     *
+     * @param exploredStates
+     */
+    protected void markAsExplored(Set<ClassifiedState> exploredStates) {
+        for (ClassifiedState state : exploredStates) {
+            if (!explored.contains(state)) {
+                markAsExplored(state);
+            }
+        }
     }
 
     /**
@@ -166,7 +186,28 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      * @param successorRates
      */
     protected void writeStateTransitions(ClassifiedState state, Map<ClassifiedState, Double> successorRates) {
-        stateProcessor.processTransitions(state, successorRates);
+        Map<Integer, Double> transitions = getIntegerTransitions(successorRates);
+        int stateId = explored.getId(state);
+        stateProcessor.processTransitions(stateId, transitions);
+        stateProcessor.processState(state, stateId);
         processedCount += successorRates.size();
+    }
+
+    private Map<Integer, Double> getIntegerTransitions(Map<ClassifiedState, Double> successorRates) {
+        Map<Integer, Double> transitions = new HashMap<>();
+        for (Map.Entry<ClassifiedState, Double> entry : successorRates.entrySet()) {
+            transitions.put(explored.getId(entry.getKey()), entry.getValue());
+        }
+        return transitions;
+    }
+
+    /**
+     *
+     * @return a unique number for every state
+     */
+    private int getUniqueStateNumber() {
+        int number = stateCount;
+        stateCount++;
+        return number;
     }
 }

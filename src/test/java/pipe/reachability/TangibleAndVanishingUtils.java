@@ -10,8 +10,8 @@ import uk.ac.imperial.io.StateWriter;
 
 public class TangibleAndVanishingUtils implements StateExplorerUtils {
     @Override
-    public StateProcessor getTangibleStateExplorer(StateWriter stateWriter, Output outputStream) {
-        return new StateIOProcessor(stateWriter, outputStream);
+    public StateProcessor getTangibleStateExplorer(StateWriter stateWriter, Output transitionStream, Output stateStream) {
+        return new StateIOProcessor(stateWriter, transitionStream, stateStream);
     }
 
     @Override

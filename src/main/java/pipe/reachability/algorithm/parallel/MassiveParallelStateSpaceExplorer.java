@@ -62,7 +62,7 @@ public class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplore
             Collection<ClassifiedState> unexplored = new HashSet<>();
             for (int i = 0; i < submitted; i++) {
                 Result result = completionService.take().get();
-                explored.addAll(result.explored);
+                markAsExplored(result.explored);
                 unexplored.addAll(result.unexplored); //TODO: Potentially adding something that is in later explored set?
 
                 //Combine results to avoid writing dups
@@ -83,6 +83,7 @@ public class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplore
         }
         executorService.shutdownNow();
     }
+
 
     /**
      * Callable implementation that explores a state and its successors up to a certain
