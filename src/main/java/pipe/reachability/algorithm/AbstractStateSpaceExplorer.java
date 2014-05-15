@@ -58,7 +58,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
      * This value is used to give a unique number to each state seen
      */
-    private int stateCount = 0;
+    public int stateCount = 0;
 
     public AbstractStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                       StateProcessor stateProcessor) {
@@ -83,7 +83,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     }
 
     /**
-     *
      * @param state
      * @return List of place names contained in state
      */
@@ -129,7 +128,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     /**
      * Marks each state in explored as explored if it is not already in the explored set.
-     *
+     * <p/>
      * It must do the contains check to ensure it does not get two different unique numbers
      *
      * @param exploredStates
@@ -145,7 +144,8 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
      * registers a transition to the successor in stateRecords and
      * adds the successor to the exploredQueue if it is not already contained in it.
-     *  @param successor state that is possible via an enabled transition from state
+     *
+     * @param successor state that is possible via an enabled transition from state
      * @param rate      rate at which state transitions to successor
      */
     protected void registerStateTransition(ClassifiedState successor, double rate) {
@@ -182,7 +182,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      * have been summed up. If this is not the case then multiple transitions will be written to
      * disk and must be dealt with accordingly.
      *
-     * @param state the current state that successors belong to
+     * @param state          the current state that successors belong to
      * @param successorRates
      */
     protected void writeStateTransitions(ClassifiedState state, Map<ClassifiedState, Double> successorRates) {
@@ -202,7 +202,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     }
 
     /**
-     *
      * @return a unique number for every state
      */
     private int getUniqueStateNumber() {

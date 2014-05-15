@@ -17,7 +17,6 @@ public class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplore
 
     protected ExecutorService executorService;
 
-
     public MassiveParallelStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                              StateProcessor stateProcessor, int statesPerThread) {
         super(explorerUtilities, vanishingExplorer, stateProcessor);
@@ -63,7 +62,7 @@ public class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplore
             for (int i = 0; i < submitted; i++) {
                 Result result = completionService.take().get();
                 markAsExplored(result.explored);
-                unexplored.addAll(result.unexplored); //TODO: Potentially adding something that is in later explored set?
+                unexplored.addAll(result.unexplored);
 
                 //Combine results to avoid writing dups
                 for (Map.Entry<ClassifiedState, Map<ClassifiedState, Double>> entry : result.transitions.entrySet()) {
@@ -81,6 +80,7 @@ public class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplore
             }
             explorerUtilities.clear();
         }
+
         executorService.shutdownNow();
     }
 
