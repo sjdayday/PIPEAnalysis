@@ -1,7 +1,7 @@
 package pipe.reachability.algorithm;
 
-import uk.ac.imperial.pipe.animation.Animator;
-import uk.ac.imperial.pipe.animation.PetriNetAnimator;
+import uk.ac.imperial.pipe.animation.AnimationLogic;
+import uk.ac.imperial.pipe.animation.PetriNetAnimationLogic;
 import uk.ac.imperial.pipe.models.component.place.Place;
 import uk.ac.imperial.pipe.models.component.token.Token;
 import uk.ac.imperial.pipe.models.component.transition.Transition;
@@ -18,7 +18,7 @@ import java.util.*;
 
 /**
  * Useful methods to help explore the state space.
- *
+ * <p/>
  * Performs caching of frequent computations
  */
 public class CachingExplorerUtilities implements ExplorerUtilities {
@@ -30,7 +30,7 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
     /**
      * Animator for the Petri net
      */
-    private final Animator animator;
+    private final AnimationLogic animationLogic;
 
     /**
      * Cached successors is used when exploring states to quickly determine
@@ -41,7 +41,6 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
     private Map<ClassifiedState, Map<ClassifiedState, Collection<Transition>>> cachedSuccessors = new HashMap<>();
 
     /**
-     *
      * Takes a copy of the Petri net to use for state space exploration so
      * not to affect the reference
      *
@@ -49,14 +48,13 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
      */
     public CachingExplorerUtilities(PetriNet petriNet) {
         this.petriNet = ClonePetriNet.clone(petriNet);
-        animator = new PetriNetAnimator(this.petriNet);
+        animationLogic = new PetriNetAnimationLogic(this.petriNet);
     }
 
     /**
-     *
      * Finds successors of the given state. A successor is a state that occurs
      * when one of the enabled transitions in the current state is fired.
-     *
+     * <p/>
      * Performs caching of the successors to speed up computation time
      * when a state is queried more than once. This is particularly useful
      * if on the fly vanishing state exploration is used
@@ -71,25 +69,15 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
             return cachedSuccessors.get(state);
         }
 
-
-        setState(petriNet, state);
-        Collection<Transition> enabled = animator.getEnabledTransitions();
-        Map<ClassifiedState, Collection<Transition>> successors = new HashMap<>();
-        for (Transition transition : enabled) {
-            setState(petriNet, state);
-            animator.fireTransition(transition);
-            ClassifiedState successor = getCurrentState();
-
-
-            if (!successors.containsKey(successor)) {
-                successors.put(successor, new LinkedList<Transition>());
-            }
-            successors.get(successor).add(transition);
+        Map<State, Collection<Transition>> successors = animationLogic.getSuccessors(state);
+        Map<ClassifiedState, Collection<Transition>> classifiedSuccessors = new HashMap<>();
+        for (Map.Entry<State, Collection<Transition>> entry : successors.entrySet()) {
+            classifiedSuccessors.put(classify(entry.getKey()), entry.getValue());
         }
 
-        cachedSuccessors.put(state, successors);
+        cachedSuccessors.put(state, classifiedSuccessors);
 
-        return successors;
+        return classifiedSuccessors;
     }
 
     @Override
@@ -125,17 +113,26 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     /**
+     * Classifies the state
+     *
+     * @param state
+     * @return classified state
+     */
+    public ClassifiedState classify(State state) {
+        boolean tanigble = isTangible(state);
+        return (tanigble ? HashedClassifiedState.tangibleState(state) : HashedClassifiedState.vanishingState(state));
+    }
+
+    /**
      * A tangible state is one in which:
      * a) Has no enabled transitions
      * b) Has entirely timed transitions leaving it
-     *
      *
      * @param state to test for tangibility
      * @return true if the current token count setting is tangible
      */
     private boolean isTangible(State state) {
-        setState(state);
-        Set<Transition> enabledTransitions = animator.getEnabledTransitions();
+        Set<Transition> enabledTransitions = animationLogic.getEnabledTransitions(state);
         boolean anyTimed = false;
         boolean anyImmediate = false;
         for (Transition transition : enabledTransitions) {
@@ -149,25 +146,8 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     /**
-     * Sets the Petri net to this state
-     *
-     * @param state contains the token counts to set the places to
-     */
-    private void setState(PetriNet petriNet, State state) {
-        for (Place place : petriNet.getPlaces()) {
-            place.setTokenCounts(state.getTokens(place.getId()));
-        }
-    }
-
-    private void setState(State state) {
-        for (Place place : petriNet.getPlaces()) {
-            place.setTokenCounts(state.getTokens(place.getId()));
-        }
-    }
-
-    /**
      * Calculates the set of transitions that will take you from one state to the successor.
-     *
+     * <p/>
      * Uses the current underlying cached methods so that duplicate calls to this method
      * will not result in another computation
      *
@@ -182,12 +162,12 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
         if (stateTransitions.containsKey(successor)) {
             return stateTransitions.get(successor);
         }
+
         return new LinkedList<>();
     }
 
 
     /**
-     *
      * Sums up the weights of the transitions. Transitions may have functional rates
      *
      * @param transitions
@@ -209,7 +189,6 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     /**
-     *
      * @param state
      * @return all enabled transitions for the specified state
      */
@@ -224,7 +203,7 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
 
     @Override
     public void clear() {
-       cachedSuccessors.clear();
+        cachedSuccessors.clear();
     }
 
 }
