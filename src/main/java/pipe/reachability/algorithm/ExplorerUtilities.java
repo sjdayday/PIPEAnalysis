@@ -69,10 +69,12 @@ public interface ExplorerUtilities {
      *
      * Sums up the weights of the transitions. Transitions may have functional rates
      *
+     *
+     * @param state
      * @param transitions
      * @return summed up the weight of the transitions specified
      */
-    double getWeightOfTransitions(Iterable<Transition> transitions);
+    double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions);
 
 
 

@@ -8,6 +8,7 @@ import uk.ac.imperial.pipe.models.component.transition.Transition;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.parsers.FunctionalResults;
 import uk.ac.imperial.pipe.parsers.PetriNetWeightParser;
+import uk.ac.imperial.pipe.parsers.StateEvalVisitor;
 import uk.ac.imperial.pipe.visitor.ClonePetriNet;
 import uk.ac.imperial.state.ClassifiedState;
 import uk.ac.imperial.state.HashedClassifiedState;
@@ -88,7 +89,7 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
     @Override
     public double rate(ClassifiedState state, ClassifiedState successor) {
         Collection<Transition> transitionsToSuccessor = getTransitions(state, successor);
-        return getWeightOfTransitions(transitionsToSuccessor);
+        return getWeightOfTransitions(state, transitionsToSuccessor);
     }
 
 
@@ -170,13 +171,17 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
     /**
      * Sums up the weights of the transitions. Transitions may have functional rates
      *
+     *
+     * @param state
      * @param transitions
      * @return summed up the weight of the transitions specified
      */
     @Override
-    public double getWeightOfTransitions(Iterable<Transition> transitions) {
+    public double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions) {
         double weight = 0;
-        PetriNetWeightParser parser = new PetriNetWeightParser(petriNet);
+
+        StateEvalVisitor evalVisitor = new StateEvalVisitor(petriNet, state);
+        PetriNetWeightParser parser = new PetriNetWeightParser(evalVisitor, petriNet);
         for (Transition transition : transitions) {
             FunctionalResults<Double> results = parser.evaluateExpression(transition.getRateExpr());
             if (!results.hasErrors()) {

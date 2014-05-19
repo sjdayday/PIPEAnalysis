@@ -93,9 +93,9 @@ public class OnTheFlyVanishingExplorer implements VanishingExplorer {
         if (marked.isEmpty()) {
             return 0;
         }
-        double toSuccessorWeight = explorerUtilities.getWeightOfTransitions(marked);
+        double toSuccessorWeight = explorerUtilities.getWeightOfTransitions(state, marked);
         double totalWeight =
-                explorerUtilities.getWeightOfTransitions(explorerUtilities.getAllEnabledTransitions(state));
+                explorerUtilities.getWeightOfTransitions(state, explorerUtilities.getAllEnabledTransitions(state));
         return toSuccessorWeight / totalWeight;
     }
 
