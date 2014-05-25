@@ -8,6 +8,7 @@ import pipe.reachability.algorithm.CachingExplorerUtilities;
 import pipe.reachability.algorithm.ExplorerUtilities;
 import pipe.reachability.algorithm.TimelessTrapException;
 import pipe.reachability.algorithm.VanishingExplorer;
+import pipe.reachability.algorithm.parallel.MassiveParallelStateSpaceExplorer;
 import pipe.reachability.algorithm.sequential.SequentialStateSpaceExplorer;
 import pipe.reachability.algorithm.state.StateSpaceExplorer;
 import uk.ac.imperial.io.EntireStateReader;
@@ -58,6 +59,33 @@ public class Utils {
 
                 StateSpaceExplorer stateSpaceExplorer =
                         new SequentialStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor);
+                processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState());
+            }
+            try (ByteArrayInputStream transitionInputStream = new ByteArrayInputStream(transitionByteStream.toByteArray());
+                 ByteArrayInputStream stateStream = new ByteArrayInputStream(stateByteStream.toByteArray());
+                 Input inputStream = new Input(transitionInputStream);
+                 Input stateInputStream = new Input(stateStream)) {
+                MultiStateReader reader = new EntireStateReader(kryoIo);
+                Collection<Record> records = reader.readRecords(inputStream);
+                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
+                return new StateSpaceResult(records, processedTransitons, mappings);
+            }
+        }
+    }
+
+    public static StateSpaceResult performParallelStateSpaceExplore(StateExplorerUtils utils, PetriNet petriNet)
+            throws IOException, ExecutionException, InterruptedException, TimelessTrapException {
+        KryoStateIO kryoIo = new KryoStateIO();
+        int processedTransitons = 0;
+        try (ByteArrayOutputStream transitionByteStream = new ByteArrayOutputStream();
+             ByteArrayOutputStream stateByteStream = new ByteArrayOutputStream()) {
+            try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
+                StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
+                ExplorerUtilities explorerUtilities = new CachingExplorerUtilities(petriNet);
+                VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
+
+                StateSpaceExplorer stateSpaceExplorer =
+                        new MassiveParallelStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor, 5);
                 processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState());
             }
             try (ByteArrayInputStream transitionInputStream = new ByteArrayInputStream(transitionByteStream.toByteArray());

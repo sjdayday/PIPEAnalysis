@@ -73,10 +73,15 @@ public class StateSpaceExplorerStepDefinitions {
         petriNet = Utils.readPetriNet(path);
     }
 
-    @When("^I generate the exploration graph$")
-    public void I_generate_the_exploration_graph() throws IOException, ExecutionException, InterruptedException {
+    @When("^I generate the exploration graph (in parallel)$")
+    public void I_generate_the_exploration_graph(String parallel) throws IOException, ExecutionException, InterruptedException {
         try {
-            Utils.StateSpaceResult result = Utils.performStateSpaceExplore(utils, petriNet);
+            Utils.StateSpaceResult result;
+            if (parallel.isEmpty()) {
+                 result = Utils.performStateSpaceExplore(utils, petriNet);
+            } else {
+                result = Utils.performParallelStateSpaceExplore(utils, petriNet);
+            }
             processedTransitons = result.processedTransitions;
             for (Record record : result.results) {
                 results.put(record.state, record.successors);
