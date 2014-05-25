@@ -60,10 +60,9 @@ public class SteadyStateStepDefinitions {
             SteadyStateSolver solver;
             if (method.equals("sequential")) {
                 solver = new GaussSeidelSolver();
-            } else if (method.equals("parallel jacobi")) {
-                solver = new ParallelJacobiSolver(8);
             } else {
-                solver = new PowerSolver(8);
+                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
+                solver = new ParallelSteadyStateSolver(8, builder);
             }
             probabilities.putAll(solver.solve(records));
         } catch (TimelessTrapException e) {

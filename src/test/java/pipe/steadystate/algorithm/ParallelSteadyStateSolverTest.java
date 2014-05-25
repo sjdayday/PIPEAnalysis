@@ -1,0 +1,103 @@
+package pipe.steadystate.algorithm;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import uk.ac.imperial.state.Record;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+
+@RunWith(MockitoJUnitRunner.class)
+public class ParallelSteadyStateSolverTest {
+    @Mock
+    SteadyStateBuilder builder;
+
+    @Mock
+    SteadyStateSolver jacobiSolver;
+    @Mock
+    SteadyStateSolver gsSolver;
+    @Mock
+    SteadyStateSolver powerSolver;
+
+    @Before
+    public void setUp() {
+        when(builder.buildGaussSeidel()).thenReturn(gsSolver);
+        when(builder.buildJacobi(any(ExecutorService.class), anyInt())).thenReturn(jacobiSolver);
+        when(builder.buildPower(any(ExecutorService.class), anyInt())).thenReturn(powerSolver);
+    }
+
+
+    /**
+     * Since the Jacobi method transforms a CTMC A into a DTMC Q
+     * and then solves for (I-Q)^Tx^T = 0
+     * we need to pick a matrix which once transformed is diagonally
+     * dominant once subtracted from I.
+     *
+     * This can be the following Matrix:
+     */
+    @Test
+    public void runsJacobiForDiagonallyDominantMatrix() {
+        ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
+
+        List<Record> records = new ArrayList<>();
+        Map<Integer, Double> successors0 = new HashMap<>();
+        successors0.put(1, 1.0);
+        records.add(new Record(0, successors0));
+
+        Map<Integer, Double> successors1 = new HashMap<>();
+        successors1.put(0, 1.0);
+        records.add(new Record(1, successors1));
+
+
+        solver.solve(records);
+
+        verify(builder).buildJacobi(any(ExecutorService.class), eq(8));
+        verify(builder, never()).buildGaussSeidel();
+        verify(builder, never()).buildPower(any(ExecutorService.class), anyInt());
+        verify(jacobiSolver).solve(records);
+    }
+
+    /**
+     * Since the Jacobi method transforms a CTMC A into a DTMC Q
+     * and then solves for (I-Q)^Tx^T = 0
+     * we need to pick a matrix which once transformed is diagonally
+     * dominant once subtracted from I.
+     *
+     * This can be the following Matrix:
+     */
+    @Test
+    public void runsComboForNonDiagonallyDominantMatrix() {
+        ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
+
+        List<Record> records = new ArrayList<>();
+        Map<Integer, Double> successors0 = new HashMap<>();
+        successors0.put(1, 2.0);
+        records.add(new Record(0, successors0));
+
+        Map<Integer, Double> successors1 = new HashMap<>();
+        successors1.put(0, 1.0);
+        records.add(new Record(1, successors1));
+
+
+        solver.solve(records);
+
+        verify(builder, never()).buildJacobi(any(ExecutorService.class), anyInt());
+        verify(builder).buildGaussSeidel();
+        verify(builder).buildPower(any(ExecutorService.class), eq(7));
+        verify(powerSolver).solve(records);
+        verify(gsSolver).solve(records);
+    }
+
+
+}

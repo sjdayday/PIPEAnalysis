@@ -9,7 +9,9 @@ import pipe.reachability.algorithm.VanishingExplorer;
 import pipe.reachability.algorithm.parallel.MassiveParallelStateSpaceExplorer;
 import pipe.reachability.algorithm.sequential.SequentialStateSpaceExplorer;
 import pipe.steadystate.algorithm.GaussSeidelSolver;
-import pipe.steadystate.algorithm.PowerSolver;
+import pipe.steadystate.algorithm.ParallelSteadyStateSolver;
+import pipe.steadystate.algorithm.SteadyStateBuilder;
+import pipe.steadystate.algorithm.SteadyStateBuilderImpl;
 import uk.ac.imperial.io.EntireStateReader;
 import uk.ac.imperial.io.KryoStateIO;
 import uk.ac.imperial.io.MultiStateReader;
@@ -36,10 +38,10 @@ public class Runner {
     public static void main(String[] args)
             throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
             IOException {
-        PetriNet petriNet = Utils.readPetriNet("/simple_vanishing.xml");
+        PetriNet petriNet = Utils.readPetriNet("/small_complex_108.xml");
 
 
-//        processSequential(petriNet);
+        processSequential(petriNet);
         processParallel(petriNet, 1000);
     }
 
@@ -124,7 +126,8 @@ public class Runner {
                 List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
                 Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
 
-                PowerSolver solver = new PowerSolver(1);
+                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
+                ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
                 Map<Integer, Double> steadyState = solver.solve(records);
                 for (Map.Entry<Integer, Double> entry : steadyState.entrySet()) {
                     System.out.println("State: " + entry.getKey() + " prob " + entry.getValue());

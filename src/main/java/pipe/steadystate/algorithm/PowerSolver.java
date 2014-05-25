@@ -7,13 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-public class PowerSolver extends AbstractSteadyStateSolver {
+class PowerSolver extends AbstractSteadyStateSolver {
     private final int threads;
 
-    public PowerSolver(int threads) {
+    private final ExecutorService executorService;
+
+    public PowerSolver(int threads, ExecutorService executorService) {
         this.threads = threads;
+        this.executorService = executorService;
     }
 
     /**
@@ -24,7 +26,6 @@ public class PowerSolver extends AbstractSteadyStateSolver {
      * @return
      */
     protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> recordsTransposed, Map<Integer, Double> diagonalElements) {
-        ExecutorService executorService = Executors.newFixedThreadPool(threads);
         ParallelSubmitter submitter = new ParallelSubmitter();
         Map<Integer, Double> x = submitter.solve(threads, executorService, initialiseXWithGuess(recordsTransposed), recordsTransposed, diagonalElements, new ParallelSubmitter.ParallelUtils() {
             @Override
@@ -42,7 +43,6 @@ public class PowerSolver extends AbstractSteadyStateSolver {
             }
         });
 
-        executorService.shutdownNow();
         return normalize(x);
     }
     /**
@@ -80,7 +80,6 @@ public class PowerSolver extends AbstractSteadyStateSolver {
      * @param x current value of x from this iteration
      * @return true if x has converged
      */
-    //TODO: IS THERE A BETTER WAY?
     private boolean hasConverged(Map<Integer, Double> previousX, Map<Integer, Double> x) {
         Map<Integer, Double> subtracted = subtract(previousX, x);
         double subtractedNorm = euclidianNorm(subtracted);

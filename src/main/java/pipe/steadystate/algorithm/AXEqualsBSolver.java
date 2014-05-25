@@ -2,7 +2,6 @@ package pipe.steadystate.algorithm;
 
 import uk.ac.imperial.state.Record;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,25 +36,8 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
     }
 
 
-
-
-
-
-    //TODO: What if a state had no transitions? Ask Will to check this method
-    protected abstract Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
+    abstract Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
                                                   Map<Integer, Double> diagonalElements);
-
-
-
-    private Map<Integer, Map<Integer, Double>> uniformize(Map<Integer, Map<Integer, Double>> A, double a) {
-        Map<Integer, Map<Integer, Double>> result = new HashMap<>();
-        for (Map.Entry<Integer, Map<Integer, Double>> entry : A.entrySet()) {
-            int key = entry.getKey();
-            Map<Integer, Double> row = divide(a, entry.getValue());
-            result.put(key, row);
-        }
-        return result;
-    }
 
     /**
      * Checks to see if gauss seidel has converged. That is if Ax < EPSILON

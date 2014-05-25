@@ -3,7 +3,6 @@ package pipe.steadystate.algorithm;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Solves a matrix via the Jacobi iteration.
@@ -11,21 +10,31 @@ import java.util.concurrent.Executors;
  * Note that convergence is only guaranteed for diagonally dominant matrices, so this should
  * be checked before solve is called. Failing that solve may hang indefinitely.
  */
-public class ParallelJacobiSolver extends AXEqualsBSolver {
+class ParallelJacobiSolver extends AXEqualsBSolver {
 
+    /**
+     * Number of threads to run in parallel on the CPU
+     */
     private final int threads;
 
     /**
-     * Number of threads Jacobi should be solved with
-     * @param threads
+     * Executor service for submitting runnable tasks to
      */
-    public ParallelJacobiSolver(int threads) {
+    private final ExecutorService executorService;
+
+    /**
+     *
+     * @param threads Number of threads Jacobi should be solved with for each
+     *                iteration
+     * @param executorService service to submit tasks to
+     */
+    public ParallelJacobiSolver(int threads, ExecutorService executorService) {
         this.threads = threads;
+        this.executorService = executorService;
     }
     @Override
     protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
-        ExecutorService executorService = Executors.newFixedThreadPool(threads);
         ParallelSubmitter submitter = new ParallelSubmitter();
         Map<Integer, Double> x = submitter.solve(threads, executorService, initialiseXWithGuess(records), records, diagonalElements, new ParallelSubmitter.ParallelUtils() {
             @Override
@@ -43,7 +52,6 @@ public class ParallelJacobiSolver extends AXEqualsBSolver {
             }
         });
 
-        executorService.shutdownNow();
         return normalize(x);
     }
 
@@ -88,13 +96,19 @@ public class ParallelJacobiSolver extends AXEqualsBSolver {
 
         @Override
         public void run() {
-            for (int state = from; state <= to; state++) {
-                Map<Integer, Double> row = records.get(state);
-                double aii = diagonalElements.get(state);
-                double rowValue = getRowValue(state, row, aii, previous);
-                x.put(state, rowValue);
+            try {
+                for (int state = from; state <= to; state++) {
+                    Map<Integer, Double> row = records.get(state);
+                    double aii = diagonalElements.get(state);
+                    double rowValue = getRowValue(state, row, aii, previous);
+                    x.put(state, rowValue);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }finally {
+
+                latch.countDown();
             }
-            latch.countDown();
         }
     }
 }

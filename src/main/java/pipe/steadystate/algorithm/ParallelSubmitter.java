@@ -1,17 +1,31 @@
 package pipe.steadystate.algorithm;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
-public class ParallelSubmitter {
+/**
+ * Used to solve multiple parallel implementations.
+ *
+ * Since Jacobi and the power method solve slightly different matricies they both
+ * pass in runnable iteration methods which should modify x.
+ */
+class ParallelSubmitter {
 
+    /**
+     * Solves the steady state using the methods in the utils.
+     * @param threads
+     * @param executorService
+     * @param firstGuess
+     * @param records
+     * @param diagonalElements
+     * @param utils
+     * @return unnormalized x.
+     */
     public Map<Integer, Double> solve(int threads, ExecutorService executorService, Map<Integer, Double> firstGuess, Map<Integer, Map<Integer, Double>> records,
                     Map<Integer, Double> diagonalElements, ParallelUtils utils) {
-
         Map<Integer, Double> x = new ConcurrentHashMap<>(firstGuess);
         Map<Integer, Double> previous = new HashMap<>(x); //TODO: I dont think this needs to be concurrent, only ever doing 'get'
         boolean converged = false;
@@ -25,34 +39,8 @@ public class ParallelSubmitter {
             converged = utils.isConverged(previous, x, records, diagonalElements);
             previous = new HashMap<>(x);
         }
-
         return x;
     }
-
-
-    private Map<Integer, Double> normalizeConcurrent(Map<Integer, Double> x) {
-        double sum = 0;
-        for (double value : x.values()) {
-            sum += value;
-        }
-        Map<Integer, Double> normalized = new ConcurrentHashMap<>();
-        if (sum == 0) {
-            normalized.putAll(x);
-        } else {
-            for (Map.Entry<Integer, Double> entry : x.entrySet()) {
-                normalized.put(entry.getKey(), entry.getValue()/sum);
-            }
-        }
-        return normalized;
-    }
-
-    private ConcurrentHashMap<Integer, BigDecimal> convertToBigDecimal(Map<Integer, Double> x) {
-        ConcurrentHashMap<Integer, BigDecimal> result = new ConcurrentHashMap<>();
-        for (Map.Entry<Integer, Double> entry : x.entrySet()) {
-            result.put(entry.getKey(), new BigDecimal(entry.getValue()));
-        }
-    }
-
 
     private CountDownLatch submitTasks(ParallelUtils utils, int threads, Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements,
                                        ExecutorService executorService, Map<Integer, Double> x, Map<Integer, Double> previous
@@ -66,8 +54,7 @@ public class ParallelSubmitter {
         //TODO: THis wont do the last one, so we want inclusive too?
         int from  = 0;
         for (int thread = 0; thread < scheduledThreads; thread++) {
-            int to = from + split - 1 + remaining;
-//            System.out.println("Thread " + thread + " from " + from + " to " + to);
+            int to = from + split - 1 + (remaining > 0 ? 1 : 0);
             if (remaining > 0) {
                 remaining--;
             }
@@ -83,6 +70,18 @@ public class ParallelSubmitter {
         boolean isConverged(Map<Integer, Double> previousX, Map<Integer, Double> x,
                             Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements);
 
+        /**
+         * Create a runnable item that perfoms a single iteration in the
+         * parallel implementation
+         * @param from
+         * @param to
+         * @param latch
+         * @param previousX
+         * @param x
+         * @param records
+         * @param diagonalElements
+         * @return
+         */
         Runnable createRunnable(int from, int to, CountDownLatch latch, Map<Integer, Double> previousX, Map<Integer, Double> x, Map<Integer, Map<Integer, Double>> records,
                                 Map<Integer, Double> diagonalElements);
     }
