@@ -16,6 +16,7 @@ import uk.ac.imperial.state.HashedStateBuilder;
 import uk.ac.imperial.state.State;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Useful methods to help explore the state space.
@@ -39,7 +40,8 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
      * <p/>
      * It will be most useful when exploring cyclic transitions
      */
-    private Map<ClassifiedState, Map<ClassifiedState, Collection<Transition>>> cachedSuccessors = new HashMap<>();
+    private Map<ClassifiedState, Map<ClassifiedState, Collection<Transition>>> cachedSuccessors =
+            new ConcurrentHashMap<>();
 
     /**
      * Takes a copy of the Petri net to use for state space exploration so
@@ -77,6 +79,7 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
         }
 
         cachedSuccessors.put(state, classifiedSuccessors);
+
 
         return classifiedSuccessors;
     }
@@ -160,9 +163,11 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
     @Override
     public Collection<Transition> getTransitions(ClassifiedState state, ClassifiedState successor) {
         Map<ClassifiedState, Collection<Transition>> stateTransitions = getSuccessorsWithTransitions(state);
+
         if (stateTransitions.containsKey(successor)) {
             return stateTransitions.get(successor);
         }
+
 
         return new LinkedList<>();
     }
@@ -170,7 +175,6 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
 
     /**
      * Sums up the weights of the transitions. Transitions may have functional rates
-     *
      *
      * @param state
      * @param transitions
@@ -209,6 +213,7 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
     @Override
     public void clear() {
         cachedSuccessors.clear();
+        animationLogic.clear();
     }
 
 }

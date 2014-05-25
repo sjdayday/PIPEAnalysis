@@ -13,6 +13,7 @@ public class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplore
      * Number of states to analyse sequentially per thread
      */
     private final int statesPerThread;
+    private final int threads = 1;
 
 
     protected ExecutorService executorService;
@@ -43,13 +44,13 @@ public class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplore
     @Override
     protected void stateSpaceExploration()
             throws InterruptedException, ExecutionException, TimelessTrapException, IOException {
-        executorService = Executors.newFixedThreadPool(8);
+        executorService = Executors.newFixedThreadPool(threads);
         CompletionService<Result> completionService =
                 new ExecutorCompletionService<>(executorService);
 
         while (!explorationQueue.isEmpty()) {
             int submitted = 0;
-            while (submitted < 8 && !explorationQueue.isEmpty()) {
+            while (submitted < threads && !explorationQueue.isEmpty()) {
                 ClassifiedState state = explorationQueue.poll();
                 completionService.submit(
                         new MultiStateExplorer(state, statesPerThread, explorerUtilities, vanishingExplorer));
@@ -156,7 +157,7 @@ public class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplore
                     } else {
                         Collection<StateRateRecord> explorableStates = vanishingExplorer.explore(successor, rate);
                         for (StateRateRecord record : explorableStates) {
-                            registerStateRate(record.getState(), rate, successorRates);
+                            registerStateRate(record.getState(), record.getRate(), successorRates);
                             if (!seen(record.getState())) {
                                 explorationQueue.add(record.getState());
                                 exploredStates.add(record.getState());
