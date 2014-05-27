@@ -43,8 +43,10 @@ public class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
         try {
             if (isDiagonallyDominant(QTranspose, newDiagonals)) {
+                System.out.println("Solve with Jacobi!");
                 return solveWithJacobi(records, executorService);
             }
+            System.out.println("Solve with Power&GS!");
             return solveWithPowerAndGS(records, executorService);
         }   finally{
             executorService.shutdownNow();

@@ -29,6 +29,7 @@ class ParallelSubmitter {
         Map<Integer, Double> x = new ConcurrentHashMap<>(firstGuess);
         Map<Integer, Double> previous = new HashMap<>(x); //TODO: I dont think this needs to be concurrent, only ever doing 'get'
         boolean converged = false;
+        int iterations = 0;
         while (!converged) {
             CountDownLatch latch = submitTasks(utils, threads, records, diagonalElements, executorService, x, previous);
             try {
@@ -38,7 +39,9 @@ class ParallelSubmitter {
             }
             converged = utils.isConverged(previous, x, records, diagonalElements);
             previous = new HashMap<>(x);
+            iterations++;
         }
+        System.out.println("took " + iterations + " iterations to converge");
         return x;
     }
 

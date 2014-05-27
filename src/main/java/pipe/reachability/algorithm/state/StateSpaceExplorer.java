@@ -26,6 +26,19 @@ public interface StateSpaceExplorer {
      * @throws pipe.reachability.algorithm.TimelessTrapException
      * @return number of transitions explored
      */
-    int generate(ClassifiedState initialState)
+    StateSpaceExplorerResults generate(ClassifiedState initialState)
             throws TimelessTrapException, InterruptedException, ExecutionException, IOException;
+
+    /**
+     * Results to return from state space exploration
+     */
+    public class StateSpaceExplorerResults {
+        public final int processedTransitions;
+        public final int numberOfStates;
+
+        public StateSpaceExplorerResults(int processedTransitions, int numberOfStates) {
+            this.processedTransitions = processedTransitions;
+            this.numberOfStates = numberOfStates;
+        }
+    }
 }

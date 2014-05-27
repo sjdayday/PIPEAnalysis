@@ -53,12 +53,12 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
      * Number of states that have been processed during exploraton
      */
-    public int processedCount = 0;
+    private int processedCount = 0;
 
     /**
      * This value is used to give a unique number to each state seen
      */
-    public int stateCount = 0;
+    private int stateCount = 0;
 
     public AbstractStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                       StateProcessor stateProcessor) {
@@ -68,12 +68,12 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     }
 
     @Override
-    public int generate(ClassifiedState initialState)
+    public StateSpaceExplorerResults generate(ClassifiedState initialState)
             throws TimelessTrapException, InterruptedException, ExecutionException, IOException {
         initialiseExplored(initialState);
         exploreInitialState(initialState);
         stateSpaceExploration();
-        return processedCount;
+        return new StateSpaceExplorerResults(processedCount, stateCount);
 
     }
 

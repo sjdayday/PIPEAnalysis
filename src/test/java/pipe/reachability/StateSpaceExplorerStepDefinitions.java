@@ -73,7 +73,7 @@ public class StateSpaceExplorerStepDefinitions {
         petriNet = Utils.readPetriNet(path);
     }
 
-    @When("^I generate the exploration graph (in parallel)$")
+    @When("^I generate the exploration graph (sequentially|in parallel)$")
     public void I_generate_the_exploration_graph(String parallel) throws IOException, ExecutionException, InterruptedException {
         try {
             Utils.StateSpaceResult result;
@@ -93,6 +93,10 @@ public class StateSpaceExplorerStepDefinitions {
 
         } catch (TimelessTrapException e) {
             timelessTrap = true;
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof TimelessTrapException) {
+                timelessTrap = true;
+            }
         }
     }
 

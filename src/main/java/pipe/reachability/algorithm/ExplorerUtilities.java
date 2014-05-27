@@ -1,6 +1,6 @@
 package pipe.reachability.algorithm;
 
-import uk.ac.imperial.pipe.models.component.transition.Transition;
+import uk.ac.imperial.pipe.models.petrinet.Transition;
 import uk.ac.imperial.state.ClassifiedState;
 
 import java.util.Collection;

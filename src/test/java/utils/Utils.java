@@ -59,7 +59,7 @@ public class Utils {
 
                 StateSpaceExplorer stateSpaceExplorer =
                         new SequentialStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor);
-                processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState());
+                processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState()).processedTransitions;
             }
             try (ByteArrayInputStream transitionInputStream = new ByteArrayInputStream(transitionByteStream.toByteArray());
                  ByteArrayInputStream stateStream = new ByteArrayInputStream(stateByteStream.toByteArray());
@@ -86,7 +86,7 @@ public class Utils {
 
                 StateSpaceExplorer stateSpaceExplorer =
                         new MassiveParallelStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor, 5);
-                processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState());
+                processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState()).processedTransitions;
             }
             try (ByteArrayInputStream transitionInputStream = new ByteArrayInputStream(transitionByteStream.toByteArray());
                  ByteArrayInputStream stateStream = new ByteArrayInputStream(stateByteStream.toByteArray());

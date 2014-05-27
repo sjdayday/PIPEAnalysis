@@ -4,7 +4,7 @@ Feature: state space exploration with vanishing states
 @tangibleAndVanishing
 Scenario Outline: Parsing examples:
   Given I use the Petri net located at <file>
-  When I generate the exploration graph
+  When I generate the exploration graph sequentially
   Then I expect to see <number> state transitions
 
   Examples:

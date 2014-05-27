@@ -22,6 +22,7 @@ public class GaussSeidelSolver extends AXEqualsBSolver {
 
         Map<Integer, Double> x = initialiseXWithGuess(records);
         boolean converged = false;
+        int iterations = 0;
         while(!converged) {
             for (Map.Entry<Integer, Map<Integer, Double>> entry : records.entrySet()) {
                 Integer state = entry.getKey();
@@ -30,7 +31,9 @@ public class GaussSeidelSolver extends AXEqualsBSolver {
                 x.put(state, rowValue);
             }
             converged = hasConverged(records, diagonalElements, x);
+            iterations++;
         }
+        System.out.println("took " + iterations + " iterations to converge!");
         return normalize(x);
     }
 

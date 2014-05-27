@@ -3,7 +3,7 @@ Feature: state space exploration of tangible states only
 @tangibleOnly
 Scenario: Parsing a simple Petri net file
   Given I use the Petri net located at /simple.xml
-  When I generate the exploration graph
+  When I generate the exploration graph sequentially
   Then I expect to see 2 state transitions
   And I expect a record with state
     """
@@ -27,7 +27,7 @@ Scenario: Parsing a simple Petri net file
 @tangibleOnly
 Scenario: Parsing a simple differently rated Petri net file
   Given I use the Petri net located at /simple_rated.xml
-  When I generate the exploration graph
+  When I generate the exploration graph sequentially
   Then I expect to see 2 state transitions
   And I expect a record with state
   """
@@ -52,7 +52,7 @@ Scenario: Parsing a simple differently rated Petri net file
 @tangibleOnly
 Scenario: Parsing a simple vanishing Petri net file
     Given I use the Petri net located at /simple_vanishing.xml
-    When I generate the exploration graph
+    When I generate the exploration graph sequentially
     Then I expect to see 4 state transitions
     And I expect a record with state
     """
@@ -130,7 +130,7 @@ Scenario: Parsing a simple vanishing Petri net file
 @tangibleOnly
 Scenario: Parsing a cyclic vanishing Petri net file
     Given I use the Petri net located at /cyclic_vanishing.xml
-    When I generate the exploration graph
+    When I generate the exploration graph sequentially
     Then I expect to see 3 state transitions
     And I expect a record with state
     """
@@ -190,7 +190,7 @@ Scenario: Parsing a cyclic vanishing Petri net file
 @tangibleOnly
 Scenario: Parsing a timeless trap Petri net file
     Given I use the Petri net located at /timeless_trap.xml
-    When I generate the exploration graph
+    When I generate the exploration graph sequentially
     Then I expect to see 0 state transitions
     And have thrown a TimelessTrapException
 
@@ -198,13 +198,13 @@ Scenario: Parsing a timeless trap Petri net file
 @tangibleOnly
 Scenario: Parsing all immediate transitions
   Given I use the Petri net located at /all_immediate.xml
-  When I generate the exploration graph
+  When I generate the exploration graph sequentially
   Then I expect to see 0 state transitions
 
 @tangibleOnly
 Scenario: Parsing simple coloured Petri net
     Given I use the Petri net located at /simple_color.xml
-    When I generate the exploration graph
+    When I generate the exploration graph sequentially
     Then I expect to see 2 state transitions
     And I expect a record with state
       """
@@ -228,7 +228,7 @@ Scenario: Parsing simple coloured Petri net
 @tangibleOnly
 Scenario: Parsing individual arc coloured Petri net
     Given I use the Petri net located at /complex_color.xml
-    When I generate the exploration graph
+    When I generate the exploration graph sequentially
     Then I expect to see 8 state transitions
     And I expect a record with state
     """
