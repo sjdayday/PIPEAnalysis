@@ -89,4 +89,13 @@ public interface ExplorerUtilities {
      * Clear any saved states
      */
     void clear();
+
+    /**
+     * Since it is possible for reachability graphs to be infinite this method provides
+     * a way to determine if the algorithm should continue past a certain size state count
+     * @param stateCount
+     * @return if the state space exploration can continue
+     */
+    boolean canExploreMore(int stateCount);
+
 }

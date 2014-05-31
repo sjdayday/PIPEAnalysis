@@ -52,6 +52,7 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
             }
         });
 
+        System.out.println("JACOBI DONE :)");
         return normalize(x);
     }
 

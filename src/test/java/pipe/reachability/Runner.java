@@ -1,40 +1,69 @@
 package pipe.reachability;
 
+import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import pipe.reachability.algorithm.CachingExplorerUtilities;
-import pipe.reachability.algorithm.ExplorerUtilities;
-import pipe.reachability.algorithm.TimelessTrapException;
-import pipe.reachability.algorithm.VanishingExplorer;
+import pipe.reachability.algorithm.*;
 import pipe.reachability.algorithm.parallel.MassiveParallelStateSpaceExplorer;
 import pipe.reachability.algorithm.sequential.SequentialStateSpaceExplorer;
 import pipe.reachability.algorithm.state.StateSpaceExplorer;
-import pipe.steadystate.algorithm.SteadyStateSolver;
+import pipe.steadystate.algorithm.*;
+import uk.ac.imperial.io.EntireStateReader;
 import uk.ac.imperial.io.KryoStateIO;
+import uk.ac.imperial.io.MultiStateReader;
 import uk.ac.imperial.io.StateProcessor;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.parsers.UnparsableException;
+import uk.ac.imperial.state.ClassifiedState;
 import uk.ac.imperial.state.Record;
 import utils.Utils;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class Runner {
 
+    private static final int ONE_MILLION = 1_000_000;
+
     public static void main(String[] args)
             throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
             IOException {
 //        run("/medium_complex3.xml");
-        run("/medium_complex_2752512.xml");
+//        run("/medium_complex_286720.xml");
+        PetriNet petriNet = Utils.readPetriNet("/bause_unbound.xml");
+        processSequential(petriNet);
 
 
+    }
 
+    private static void foo()
+            throws UnparsableException, InterruptedException, ExecutionException, TimelessTrapException, JAXBException,
+            IOException {
+        dataStructureExperiment("/medium_complex_5832.xml");
+        System.out.println("~~~~~~~~~~~~~~~~");
+        dataStructureExperiment("/medium_complex_28672.xml");
+        System.out.println("~~~~~~~~~~~~~~~~");
+        dataStructureExperiment("/medium_complex_102400.xml");
+        System.out.println("~~~~~~~~~~~~~~~~");
+        dataStructureExperiment("/medium_complex_286720.xml");
+        System.out.println("~~~~~~~~~~~~~~~~");
+    }
+
+    private static void dataStructureExperiment(String s)
+            throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
+            IOException {
+        System.out.println("Starting three runs of " + s);
+        PetriNet petriNet = Utils.readPetriNet(s);
+        for (int i = 0; i < 3; i++) {
+            processSequential(petriNet);
+        }
     }
 
     private static void run(String s)
@@ -43,13 +72,13 @@ public class Runner {
         System.out.println("Results for " + s);
         System.out.println("================================");
         PetriNet petriNet = Utils.readPetriNet(s);
-        processParallel(petriNet, 100);
-        System.gc();
-        System.out.println("************************");
         processParallel(petriNet, 1000);
         System.gc();
         System.out.println("************************");
         processParallel(petriNet, 500);
+        System.gc();
+        System.out.println("************************");
+        processParallel(petriNet, 100);
         System.gc();
         System.out.println("************************");
         processSequential(petriNet);
@@ -68,7 +97,7 @@ public class Runner {
              OutputStream stateByteStream = Files.newOutputStream(state)) {
             try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
                 StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
-                ExplorerUtilities explorerUtilities = new CachingExplorerUtilities(petriNet);
+                ExplorerUtilities explorerUtilities = new CoverabilityExplorerUtilities(new UnboundedExplorerUtilities(petriNet));
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
                 SequentialStateSpaceExplorer stateSpaceExplorer =
@@ -104,7 +133,7 @@ public class Runner {
              OutputStream stateByteStream = Files.newOutputStream(state)) {
             try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
                 StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
-                ExplorerUtilities explorerUtilities = new CachingExplorerUtilities(petriNet);
+                ExplorerUtilities explorerUtilities = new UnboundedExplorerUtilities(petriNet);
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
                 MassiveParallelStateSpaceExplorer stateSpaceExplorer =
@@ -113,23 +142,23 @@ public class Runner {
                 explore(stateSpaceExplorer, explorerUtilities, " Parallel " + statesPerThread);
 
             }
-//            try (InputStream transitionInputStream = Files.newInputStream(transitions);
-//                 InputStream stateStream = Files.newInputStream(state);
-//                 Input inputStream = new Input(transitionInputStream);
-//                 Input stateInputStream = new Input(stateStream)) {
-//                MultiStateReader reader = new EntireStateReader(kryoIo);
-//                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
-//                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
-//
-//                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
-//                ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
-//                Map<Integer, Double> steadyState = solve(solver, records, "Parallel");
-//                System.out.println("----------------------");
+            try (InputStream transitionInputStream = Files.newInputStream(transitions);
+                 InputStream stateStream = Files.newInputStream(state);
+                 Input inputStream = new Input(transitionInputStream);
+                 Input stateInputStream = new Input(stateStream)) {
+                MultiStateReader reader = new EntireStateReader(kryoIo);
+                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
+                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
+
+                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
+                ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
+                Map<Integer, Double> steadyState = solve(solver, records, "Parallel");
+                System.out.println("----------------------");
 //                GaussSeidelSolver gaussSeidelSolver = new GaussSeidelSolver();
 //                solve(gaussSeidelSolver, records, "Gauss Seidel");
-//
-//
-//            }
+
+
+            }
         }
 
     }

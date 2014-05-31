@@ -23,9 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p/>
  * Performs caching of frequent computations
  */
-public class CachingExplorerUtilities implements ExplorerUtilities {
+public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     /**
-     *
+     * Petri net to explore
      */
     private final PetriNet petriNet;
 
@@ -33,6 +33,7 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
      * Animator for the Petri net
      */
     private final AnimationLogic animationLogic;
+
 
     /**
      * Cached successors is used when exploring states to quickly determine
@@ -75,12 +76,13 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
         Map<State, Collection<Transition>> successors = animationLogic.getSuccessors(state);
         Map<ClassifiedState, Collection<Transition>> classifiedSuccessors = new HashMap<>();
         for (Map.Entry<State, Collection<Transition>> entry : successors.entrySet()) {
-            classifiedSuccessors.put(classify(entry.getKey()), entry.getValue());
+            ClassifiedState succ = classify(entry.getKey());
+            if (!state.equals(succ)) {
+                classifiedSuccessors.put(succ, entry.getValue());
+            }
         }
 
         cachedSuccessors.put(state, classifiedSuccessors);
-
-
         return classifiedSuccessors;
     }
 
@@ -215,5 +217,6 @@ public class CachingExplorerUtilities implements ExplorerUtilities {
         cachedSuccessors.clear();
         animationLogic.clear();
     }
+
 
 }

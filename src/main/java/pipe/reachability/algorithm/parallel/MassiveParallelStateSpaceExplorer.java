@@ -48,7 +48,7 @@ public class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplore
         CompletionService<Result> completionService =
                 new ExecutorCompletionService<>(executorService);
 
-        while (!explorationQueue.isEmpty()) {
+        while (!explorationQueue.isEmpty() && explorerUtilities.canExploreMore(stateCount)) {
             int submitted = 0;
             while (submitted < threads && !explorationQueue.isEmpty()) {
                 ClassifiedState state = explorationQueue.poll();

@@ -46,30 +46,31 @@ public class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
                 System.out.println("Solve with Jacobi!");
                 return solveWithJacobi(records, executorService);
             }
-            System.out.println("Solve with Power&GS!");
-            return solveWithPowerAndGS(records, executorService);
+            System.out.println("Solve with Jacobi&GS!");
+            return solveWithJacobiAndGS(records, executorService);
         }   finally{
             executorService.shutdownNow();
         }
     }
 
     /**
-     * Solves by running a sequential GS & a parallel power implementation in parallel.
+     * Solves by running a sequential GS & a parallel jacobi implementation in parallel.
+     * Sequential GS is run because there is no guarantee that Jacobi will converge
      * It takes the first result that is done
      * @param records
      * @param executorService
      * @return
      */
-    private Map<Integer, Double> solveWithPowerAndGS(List<Record> records, ExecutorService executorService) {
+    private Map<Integer, Double> solveWithJacobiAndGS(List<Record> records, ExecutorService executorService) {
         SteadyStateSolver gsSolver = builder.buildGaussSeidel();
         if (threads == 1) {
             return gsSolver.solve(records);
         }
 
-        SteadyStateSolver powerSolver = builder.buildPower(executorService, threads - 1);
+        SteadyStateSolver jacobiSolver = builder.buildJacobi(executorService, threads - 1);
         CompletionService<Map<Integer, Double>> completionService =
                 new ExecutorCompletionService<>(executorService);
-        List<Future<Map<Integer, Double>>> futures = submit(completionService, records, gsSolver, powerSolver);
+        List<Future<Map<Integer, Double>>> futures = submit(completionService, records, gsSolver, jacobiSolver);
         try {
             return completionService.take().get();
         } catch (InterruptedException | ExecutionException e) {

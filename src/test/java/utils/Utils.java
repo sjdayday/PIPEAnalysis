@@ -4,10 +4,7 @@ package utils;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import pipe.reachability.StateExplorerUtils;
-import pipe.reachability.algorithm.CachingExplorerUtilities;
-import pipe.reachability.algorithm.ExplorerUtilities;
-import pipe.reachability.algorithm.TimelessTrapException;
-import pipe.reachability.algorithm.VanishingExplorer;
+import pipe.reachability.algorithm.*;
 import pipe.reachability.algorithm.parallel.MassiveParallelStateSpaceExplorer;
 import pipe.reachability.algorithm.sequential.SequentialStateSpaceExplorer;
 import pipe.reachability.algorithm.state.StateSpaceExplorer;
@@ -46,7 +43,7 @@ public class Utils {
         return Utils.class.getResource(path).getPath();
     }
 
-    public static StateSpaceResult performStateSpaceExplore(StateExplorerUtils utils, PetriNet petriNet)
+    public static StateSpaceResult performStateSpaceExplore(StateExplorerUtils utils, ExplorerUtilities explorerUtilities)
             throws IOException, ExecutionException, InterruptedException, TimelessTrapException {
         KryoStateIO kryoIo = new KryoStateIO();
         int processedTransitons = 0;
@@ -54,7 +51,6 @@ public class Utils {
              ByteArrayOutputStream stateByteStream = new ByteArrayOutputStream()) {
             try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
                 StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
-                ExplorerUtilities explorerUtilities = new CachingExplorerUtilities(petriNet);
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
                 StateSpaceExplorer stateSpaceExplorer =
@@ -73,7 +69,7 @@ public class Utils {
         }
     }
 
-    public static StateSpaceResult performParallelStateSpaceExplore(StateExplorerUtils utils, PetriNet petriNet)
+    public static StateSpaceResult performParallelStateSpaceExplore(StateExplorerUtils utils, ExplorerUtilities explorerUtilities)
             throws IOException, ExecutionException, InterruptedException, TimelessTrapException {
         KryoStateIO kryoIo = new KryoStateIO();
         int processedTransitons = 0;
@@ -81,7 +77,6 @@ public class Utils {
              ByteArrayOutputStream stateByteStream = new ByteArrayOutputStream()) {
             try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
                 StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
-                ExplorerUtilities explorerUtilities = new CachingExplorerUtilities(petriNet);
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
                 StateSpaceExplorer stateSpaceExplorer =

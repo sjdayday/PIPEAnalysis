@@ -34,6 +34,7 @@ public class GaussSeidelSolver extends AXEqualsBSolver {
             iterations++;
         }
         System.out.println("took " + iterations + " iterations to converge!");
+        System.out.println("GS DONE :)");
         return normalize(x);
     }
 

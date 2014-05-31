@@ -5,7 +5,7 @@ import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import pipe.reachability.algorithm.TimelessTrapException;
+import pipe.reachability.algorithm.*;
 import uk.ac.imperial.pipe.exceptions.PetriNetComponentNotFoundException;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.parsers.UnparsableException;
@@ -75,12 +75,35 @@ public class StateSpaceExplorerStepDefinitions {
 
     @When("^I generate the exploration graph (sequentially|in parallel)$")
     public void I_generate_the_exploration_graph(String parallel) throws IOException, ExecutionException, InterruptedException {
+        ExplorerUtilities explorerUtilities = new UnboundedExplorerUtilities(petriNet);
+        processStateSpace(parallel, explorerUtilities);
+    }
+
+    @And("^(\\d+) states")
+    public void states(int states) {
+        assertEquals(states, results.size());
+    }
+
+    @When("^I generate the exploration graph (sequentially|in parallel) with a fully explored bound of (\\d+)$")
+    public void I_generate_the_bounded_exploration_graph(String parallel, int bound) throws IOException, ExecutionException, InterruptedException {
+            ExplorerUtilities explorerUtilities = new BoundedExplorerUtilities(petriNet, bound);
+            processStateSpace(parallel, explorerUtilities);
+    }
+
+    @When("^I generate the coverability graph (sequentially|in parallel)$")
+    public void I_generate_the_coverability_graph(String parallel) throws IOException, ExecutionException, InterruptedException {
+        ExplorerUtilities explorerUtilities = new CoverabilityExplorerUtilities(new UnboundedExplorerUtilities(petriNet));
+        processStateSpace(parallel, explorerUtilities);
+    }
+
+    private void processStateSpace(String parallel, ExplorerUtilities explorerUtilities)
+            throws IOException, InterruptedException {
         try {
             Utils.StateSpaceResult result;
             if (parallel.isEmpty()) {
-                 result = Utils.performStateSpaceExplore(utils, petriNet);
+                result = Utils.performStateSpaceExplore(utils, explorerUtilities);
             } else {
-                result = Utils.performParallelStateSpaceExplore(utils, petriNet);
+                result = Utils.performParallelStateSpaceExplore(utils, explorerUtilities);
             }
             processedTransitons = result.processedTransitions;
             for (Record record : result.results) {
@@ -113,6 +136,11 @@ public class StateSpaceExplorerStepDefinitions {
     @And("^successor")
     public void successor(String jsonState) throws IOException, PetriNetComponentNotFoundException {
         successor = StateUtils.tangibleStateFromJson(jsonState);
+
+        int stateId = stateMappings.get(state);
+        int successorId = stateMappings.get(successor);
+        Map<Integer, Double> successors = results.get(stateId);
+        assertTrue(successors.containsKey(successorId));
     }
 
     @And("^rate (\\d+.\\d+)")

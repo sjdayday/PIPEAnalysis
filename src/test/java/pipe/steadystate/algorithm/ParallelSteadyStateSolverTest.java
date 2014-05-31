@@ -92,10 +92,9 @@ public class ParallelSteadyStateSolverTest {
 
         solver.solve(records);
 
-        verify(builder, never()).buildJacobi(any(ExecutorService.class), anyInt());
         verify(builder).buildGaussSeidel();
-        verify(builder).buildPower(any(ExecutorService.class), eq(7));
-        verify(powerSolver).solve(records);
+        verify(builder).buildJacobi(any(ExecutorService.class), eq(7));
+        verify(jacobiSolver).solve(records);
         verify(gsSolver).solve(records);
     }
 

@@ -42,7 +42,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
      * Queue for states yet to be explored
      */
-    protected Queue<ClassifiedState> explorationQueue = new ArrayDeque<>();
+    protected Deque<ClassifiedState> explorationQueue = new ArrayDeque<>();
 
     /**
      * Contains states that have already been explored.
@@ -58,7 +58,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
      * This value is used to give a unique number to each state seen
      */
-    private int stateCount = 0;
+    protected int stateCount = 0;
 
     public AbstractStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                       StateProcessor stateProcessor) {
@@ -79,7 +79,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     private void initialiseExplored(State state) {
         List<String> placeOrder = getPlaceNames(state);
-        explored = new ExploredSet(300_000, placeOrder);
+        explored = new ExploredSet(10, placeOrder);
     }
 
     /**
