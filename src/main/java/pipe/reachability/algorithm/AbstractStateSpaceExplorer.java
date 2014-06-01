@@ -79,7 +79,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     private void initialiseExplored(State state) {
         List<String> placeOrder = getPlaceNames(state);
-        explored = new ExploredSet(10, placeOrder);
+        explored = new ExploredSet(300007, placeOrder);
     }
 
     /**
