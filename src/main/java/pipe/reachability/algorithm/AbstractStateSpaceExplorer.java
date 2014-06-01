@@ -118,12 +118,16 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     /**
      * Adds a compressed version of a tangible state to exploredStates
+     * Writes state with id to file
      *
      * @param state state that has been explored
      */
     protected void markAsExplored(ClassifiedState state) {
         int uniqueNumber = getUniqueStateNumber();
-        explored.add(state, uniqueNumber);
+        if (!explored.contains(state)) {
+            stateProcessor.processState(state, uniqueNumber);
+            explored.add(state, uniqueNumber);
+        }
     }
 
     /**
@@ -189,7 +193,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
         Map<Integer, Double> transitions = getIntegerTransitions(successorRates);
         int stateId = explored.getId(state);
         stateProcessor.processTransitions(stateId, transitions);
-        stateProcessor.processState(state, stateId);
         processedCount += successorRates.size();
     }
 
