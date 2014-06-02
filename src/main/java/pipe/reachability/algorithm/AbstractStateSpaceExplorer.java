@@ -1,6 +1,5 @@
 package pipe.reachability.algorithm;
 
-import pipe.reachability.algorithm.state.StateSpaceExplorer;
 import uk.ac.imperial.io.StateProcessor;
 import uk.ac.imperial.state.ClassifiedState;
 import uk.ac.imperial.state.State;

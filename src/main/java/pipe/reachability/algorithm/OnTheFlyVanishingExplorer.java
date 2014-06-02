@@ -1,4 +1,4 @@
-package pipe.reachability.algorithm.state;
+package pipe.reachability.algorithm;
 
 import pipe.reachability.algorithm.ExplorerUtilities;
 import pipe.reachability.algorithm.StateRateRecord;

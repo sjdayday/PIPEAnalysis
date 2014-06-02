@@ -5,7 +5,7 @@ import com.esotericsoftware.kryo.io.Output;
 import pipe.reachability.algorithm.*;
 import pipe.reachability.algorithm.parallel.MassiveParallelStateSpaceExplorer;
 import pipe.reachability.algorithm.sequential.SequentialStateSpaceExplorer;
-import pipe.reachability.algorithm.state.StateSpaceExplorer;
+import pipe.reachability.algorithm.StateSpaceExplorer;
 import pipe.steadystate.algorithm.*;
 import uk.ac.imperial.io.EntireStateReader;
 import uk.ac.imperial.io.KryoStateIO;
@@ -37,8 +37,8 @@ public class Runner {
             IOException {
 //        run("/medium_complex3.xml");
 //        run("/medium_complex_286720.xml");
-        PetriNet petriNet = Utils.readPetriNet("/bause_unbound.xml");
-        processSequential(petriNet);
+        PetriNet petriNet = Utils.readPetriNet("/small_complex_108.xml");
+        processParallel(petriNet,100);
 
 
     }

@@ -7,7 +7,7 @@ import pipe.reachability.StateExplorerUtils;
 import pipe.reachability.algorithm.*;
 import pipe.reachability.algorithm.parallel.MassiveParallelStateSpaceExplorer;
 import pipe.reachability.algorithm.sequential.SequentialStateSpaceExplorer;
-import pipe.reachability.algorithm.state.StateSpaceExplorer;
+import pipe.reachability.algorithm.StateSpaceExplorer;
 import uk.ac.imperial.io.EntireStateReader;
 import uk.ac.imperial.io.KryoStateIO;
 import uk.ac.imperial.io.MultiStateReader;
