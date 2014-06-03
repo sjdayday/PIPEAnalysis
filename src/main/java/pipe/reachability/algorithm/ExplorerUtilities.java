@@ -1,5 +1,6 @@
 package pipe.reachability.algorithm;
 
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.models.petrinet.Transition;
 import uk.ac.imperial.state.ClassifiedState;
 
@@ -41,7 +42,7 @@ public interface ExplorerUtilities {
      * It then sums the firing rates of this intersection and divides by the sum of the firing rates
      * of the enabled transition
      */
-    double rate(ClassifiedState state, ClassifiedState successor);
+    double rate(ClassifiedState state, ClassifiedState successor) throws InvalidRateException;
 
     /**
      *
@@ -74,7 +75,7 @@ public interface ExplorerUtilities {
      * @param transitions
      * @return summed up the weight of the transitions specified
      */
-    double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions);
+    double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions) throws InvalidRateException;
 
 
 

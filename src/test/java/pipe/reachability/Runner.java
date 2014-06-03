@@ -11,6 +11,7 @@ import uk.ac.imperial.io.EntireStateReader;
 import uk.ac.imperial.io.KryoStateIO;
 import uk.ac.imperial.io.MultiStateReader;
 import uk.ac.imperial.io.StateProcessor;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.parsers.UnparsableException;
 import uk.ac.imperial.state.ClassifiedState;
@@ -34,18 +35,18 @@ public class Runner {
 
     public static void main(String[] args)
             throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
-            IOException {
+            IOException, InvalidRateException {
 //        run("/medium_complex3.xml");
 //        run("/medium_complex_286720.xml");
-        PetriNet petriNet = Utils.readPetriNet("/small_complex_108.xml");
-        processParallel(petriNet,100);
+        PetriNet petriNet = Utils.readPetriNet("/complex_color.xml");
+        processSequential(petriNet);
 
 
     }
 
     private static void foo()
             throws UnparsableException, InterruptedException, ExecutionException, TimelessTrapException, JAXBException,
-            IOException {
+            IOException, InvalidRateException {
         dataStructureExperiment("/medium_complex_5832.xml");
         System.out.println("~~~~~~~~~~~~~~~~");
         dataStructureExperiment("/medium_complex_28672.xml");
@@ -58,7 +59,7 @@ public class Runner {
 
     private static void dataStructureExperiment(String s)
             throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
-            IOException {
+            IOException, InvalidRateException {
         System.out.println("Starting three runs of " + s);
         PetriNet petriNet = Utils.readPetriNet(s);
         for (int i = 0; i < 3; i++) {
@@ -68,7 +69,7 @@ public class Runner {
 
     private static void run(String s)
             throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
-            IOException {
+            IOException, InvalidRateException {
         System.out.println("Results for " + s);
         System.out.println("================================");
         PetriNet petriNet = Utils.readPetriNet(s);
@@ -87,7 +88,7 @@ public class Runner {
     }
 
     private static void processSequential(PetriNet petriNet)
-            throws IOException, InterruptedException, TimelessTrapException, ExecutionException {
+            throws IOException, InterruptedException, TimelessTrapException, ExecutionException, InvalidRateException {
 
         TangibleOnlyUtils utils = new TangibleOnlyUtils();
         KryoStateIO kryoIo = new KryoStateIO();
@@ -97,7 +98,7 @@ public class Runner {
              OutputStream stateByteStream = Files.newOutputStream(state)) {
             try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
                 StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
-                ExplorerUtilities explorerUtilities = new CoverabilityExplorerUtilities(new UnboundedExplorerUtilities(petriNet));
+                ExplorerUtilities explorerUtilities = new UnboundedExplorerUtilities(petriNet);
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
                 SequentialStateSpaceExplorer stateSpaceExplorer =
@@ -105,25 +106,25 @@ public class Runner {
 
                 explore(stateSpaceExplorer, explorerUtilities, " Sequential ");
             }
-//            try (InputStream transitionInputStream = Files.newInputStream(transitions);
-//                 InputStream stateStream = Files.newInputStream(state);
-//                 Input inputStream = new Input(transitionInputStream);
-//                 Input stateInputStream = new Input(stateStream)) {
-//                MultiStateReader reader = new EntireStateReader(kryoIo);
-//                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
-//                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
-//
-//
-//                GaussSeidelSolver solver = new GaussSeidelSolver();
+            try (InputStream transitionInputStream = Files.newInputStream(transitions);
+                 InputStream stateStream = Files.newInputStream(state);
+                 Input inputStream = new Input(transitionInputStream);
+                 Input stateInputStream = new Input(stateStream)) {
+                MultiStateReader reader = new EntireStateReader(kryoIo);
+                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
+                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
+
+
+                GaussSeidelSolver solver = new GaussSeidelSolver();
 //                Map<Integer, Double> steadyState = solve(solver, records, "Gauss Seidel");
-//
-//
-//            }
+
+
+            }
         }
     }
 
     private static void processParallel(PetriNet petriNet, int statesPerThread)
-            throws IOException, InterruptedException, TimelessTrapException, ExecutionException {
+            throws IOException, InterruptedException, TimelessTrapException, ExecutionException, InvalidRateException {
 
         TangibleOnlyUtils utils = new TangibleOnlyUtils();
         KryoStateIO kryoIo = new KryoStateIO();
@@ -178,7 +179,7 @@ public class Runner {
     }
 
     private static void explore(StateSpaceExplorer explorer,  ExplorerUtilities explorerUtilities, String name)
-            throws InterruptedException, ExecutionException, IOException, TimelessTrapException {
+            throws InterruptedException, ExecutionException, IOException, TimelessTrapException, InvalidRateException {
         System.out.println("Starting " + name);
         System.out.println("========================");
         long startTime = System.nanoTime();

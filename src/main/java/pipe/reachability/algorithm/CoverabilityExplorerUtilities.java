@@ -2,6 +2,7 @@ package pipe.reachability.algorithm;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.models.petrinet.Transition;
 import uk.ac.imperial.state.ClassifiedState;
 import uk.ac.imperial.state.HashedClassifiedState;
@@ -20,7 +21,7 @@ import java.util.*;
  * To kirb this explosion we bound the state to have MAX_INT tokens
  * and limit its successors
  */
-public class CoverabilityExplorerUtilities implements ExplorerUtilities {
+public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
 
 
    private final ExplorerUtilities explorerUtilities;
@@ -48,22 +49,6 @@ public class CoverabilityExplorerUtilities implements ExplorerUtilities {
         Map<ClassifiedState, Collection<Transition>> boundedSuccessors = lookForUnbounded(state, successors);
         registerParent(state, boundedSuccessors.keySet());
         return boundedSuccessors;
-    }
-
-    /**
-     * A state is considered to be bounded if it has MAX_INT tokens
-     * @param state
-     * @return if the state is bounded or not
-     */
-    private boolean isBoundedState(ClassifiedState state) {
-        for (String place : state.getPlaces()) {
-            for (int value : state.getTokens(place).values()) {
-                if (value == Integer.MAX_VALUE) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private Map<ClassifiedState, Collection<Transition>> lookForUnbounded(ClassifiedState state, Map<ClassifiedState, Collection<Transition>> successors) {
@@ -147,7 +132,7 @@ public class CoverabilityExplorerUtilities implements ExplorerUtilities {
     }
 
     @Override
-    public double rate(ClassifiedState state, ClassifiedState successor) {
+    public double rate(ClassifiedState state, ClassifiedState successor) throws InvalidRateException {
         return explorerUtilities.rate(state, successor);
     }
 
@@ -162,7 +147,8 @@ public class CoverabilityExplorerUtilities implements ExplorerUtilities {
     }
 
     @Override
-    public double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions) {
+    public double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions)
+            throws InvalidRateException {
         return explorerUtilities.getWeightOfTransitions(state, transitions);
     }
 

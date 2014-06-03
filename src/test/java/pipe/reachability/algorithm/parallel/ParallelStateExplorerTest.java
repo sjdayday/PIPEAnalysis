@@ -9,6 +9,7 @@ import pipe.reachability.algorithm.ExplorerUtilities;
 import pipe.reachability.algorithm.StateRateRecord;
 import pipe.reachability.algorithm.TimelessTrapException;
 import pipe.reachability.algorithm.VanishingExplorer;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
 
 import java.util.Arrays;
@@ -49,13 +50,13 @@ public class ParallelStateExplorerTest {
     }
 
     @Test
-    public void decrementsLatch() throws TimelessTrapException {
+    public void decrementsLatch() throws TimelessTrapException, InvalidRateException {
         explorer.call();
         verify(latch, times(1)).countDown();
     }
 
     @Test
-    public void decrementsLatchIfTimelessTrap() {
+    public void decrementsLatchIfTimelessTrap() throws InvalidRateException {
         try {
             ClassifiedState successor = mock(ClassifiedState.class);
             when(successor.isTangible()).thenReturn(false);
@@ -73,7 +74,7 @@ public class ParallelStateExplorerTest {
     }
 
     @Test
-    public void tangibleRatesAdded() throws TimelessTrapException {
+    public void tangibleRatesAdded() throws TimelessTrapException, InvalidRateException {
         ClassifiedState successor = mock(ClassifiedState.class);
         when(successor.isTangible()).thenReturn(true);
         successors.add(successor);
@@ -88,7 +89,7 @@ public class ParallelStateExplorerTest {
 
 
     @Test
-    public void vanishingRatesAdded() throws TimelessTrapException {
+    public void vanishingRatesAdded() throws TimelessTrapException, InvalidRateException {
         ClassifiedState successor = mock(ClassifiedState.class);
         when(successor.isTangible()).thenReturn(false);
         successors.add(successor);
@@ -108,7 +109,7 @@ public class ParallelStateExplorerTest {
 
 
     @Test
-    public void sumsVanishingRatesForSameState() throws TimelessTrapException {
+    public void sumsVanishingRatesForSameState() throws TimelessTrapException, InvalidRateException {
         ClassifiedState successor = mock(ClassifiedState.class);
         when(successor.isTangible()).thenReturn(false);
         successors.add(successor);

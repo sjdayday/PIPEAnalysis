@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Used to solve multiple parallel implementations.
@@ -13,6 +15,8 @@ import java.util.concurrent.ExecutorService;
  * pass in runnable iteration methods which should modify x.
  */
 class ParallelSubmitter {
+
+    private static final Logger LOGGER = Logger.getLogger(ParallelSubmitter.class.getName());
 
     /**
      * Solves the steady state using the methods in the utils.
@@ -27,7 +31,7 @@ class ParallelSubmitter {
     public Map<Integer, Double> solve(int threads, ExecutorService executorService, Map<Integer, Double> firstGuess, Map<Integer, Map<Integer, Double>> records,
                     Map<Integer, Double> diagonalElements, ParallelUtils utils) {
         Map<Integer, Double> x = new ConcurrentHashMap<>(firstGuess);
-        Map<Integer, Double> previous = new HashMap<>(x); //TODO: I dont think this needs to be concurrent, only ever doing 'get'
+        Map<Integer, Double> previous = new HashMap<>(x);
         boolean converged = false;
         int iterations = 0;
         while (!converged) {
@@ -35,13 +39,13 @@ class ParallelSubmitter {
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.ALL, e.getMessage());
             }
             converged = utils.isConverged(previous, x, records, diagonalElements);
             previous = new HashMap<>(x);
             iterations++;
         }
-        System.out.println("took " + iterations + " iterations to converge");
+        LOGGER.log(Level.INFO, String.format("Took %d iterations to converge", iterations));
         return x;
     }
 

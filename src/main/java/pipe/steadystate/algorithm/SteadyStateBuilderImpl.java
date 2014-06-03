@@ -2,7 +2,7 @@ package pipe.steadystate.algorithm;
 
 import java.util.concurrent.ExecutorService;
 
-public class SteadyStateBuilderImpl implements SteadyStateBuilder
+public final class SteadyStateBuilderImpl implements SteadyStateBuilder
 
 {
     @Override

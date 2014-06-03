@@ -1,9 +1,6 @@
 package pipe.reachability.algorithm;
 
-import pipe.reachability.algorithm.ExplorerUtilities;
-import pipe.reachability.algorithm.StateRateRecord;
-import pipe.reachability.algorithm.TimelessTrapException;
-import pipe.reachability.algorithm.VanishingExplorer;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.models.petrinet.Transition;
 import uk.ac.imperial.state.ClassifiedState;
 
@@ -27,7 +24,7 @@ import java.util.LinkedList;
  *
  * Differing implementations can choose which state to explore
  */
-public class OnTheFlyVanishingExplorer implements VanishingExplorer {
+public final class OnTheFlyVanishingExplorer implements VanishingExplorer {
     /**
      * The number of times that cyclic vanishing states are allowed to be explored before a
      * {@link pipe.reachability.algorithm.TimelessTrapException} is thrown
@@ -53,7 +50,7 @@ public class OnTheFlyVanishingExplorer implements VanishingExplorer {
 
     @Override
     public Collection<StateRateRecord> explore(ClassifiedState vanishingState, double rate)
-            throws TimelessTrapException {
+            throws TimelessTrapException, InvalidRateException {
         Deque<StateRateRecord> vanishingStack = new ArrayDeque<>();
         vanishingStack.push(new StateRateRecord(vanishingState, rate));
         int iterations = 0;
@@ -88,7 +85,7 @@ public class OnTheFlyVanishingExplorer implements VanishingExplorer {
      * @param successor next state
      * @return the probability of transitioning to the successor state from state
      */
-    private double probability(ClassifiedState state, ClassifiedState successor) {
+    private double probability(ClassifiedState state, ClassifiedState successor) throws InvalidRateException {
         Collection<Transition> marked = explorerUtilities.getTransitions(state, successor);
         if (marked.isEmpty()) {
             return 0;

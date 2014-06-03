@@ -26,7 +26,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @return
      */
     @Override
-    public Map<Integer, Double> solve(List<Record> A) {
+    public final Map<Integer, Double> solve(List<Record> A) {
         Map<Integer, Double> diagonals = calculateDiagonals(A);
         double a = geta(diagonals);
         List<Record> Q = divide(A, -a);
@@ -36,7 +36,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
     }
 
 
-    abstract Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
+    protected abstract Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
                                                   Map<Integer, Double> diagonalElements);
 
     /**
@@ -54,12 +54,13 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      */
 
     //TODO: Ask will about the plausible check, could it not converge?
-    protected boolean hasConverged(Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonals,
+    protected final boolean hasConverged(Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonals,
                                    Map<Integer, Double> x) {
         for (Map.Entry<Integer, Map<Integer, Double>> entry : records.entrySet()) {
             int state = entry.getKey();
             double rowValue = multiplyAndSum(entry.getValue(), x);
-            rowValue += diagonals.get(state) * x.get(state); //Add the diagonal
+            //Add the diagonal
+            rowValue += diagonals.get(state) * x.get(state);
             if (rowValue >= EPSILON) {
                 return false;
             }
@@ -92,7 +93,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @param x     current x values
      * @return the value that should be entered in x for the state held by the record
      */
-    protected double getRowValue(Integer state, Map<Integer, Double> row, double aii, Map<Integer, Double> x) {
+    protected final double getRowValue(Integer state, Map<Integer, Double> row, double aii, Map<Integer, Double> x) {
         if (aii == 0) {
             return x.get(state);
         }

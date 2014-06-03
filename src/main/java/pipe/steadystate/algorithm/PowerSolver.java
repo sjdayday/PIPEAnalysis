@@ -84,8 +84,7 @@ class PowerSolver extends AbstractSteadyStateSolver {
         Map<Integer, Double> subtracted = subtract(previousX, x);
         double subtractedNorm = euclidianNorm(subtracted);
         double previousNorm = euclidianNorm(previousX);
-        boolean converged =  (subtractedNorm/previousNorm) < EPSILON;
-        return converged;
+        return (subtractedNorm/previousNorm) < EPSILON;
     }
 
     private Map<Integer, Double> subtract(Map<Integer, Double> a, Map<Integer,Double>b ) {
@@ -107,7 +106,7 @@ class PowerSolver extends AbstractSteadyStateSolver {
         return Math.sqrt(sum);
     }
 
-    private class ParallelSolver implements Runnable {
+    private final class ParallelSolver implements Runnable {
         /**
          * Previous value of x
          */
@@ -152,7 +151,7 @@ class PowerSolver extends AbstractSteadyStateSolver {
                 Map<Integer, Double> column = records.get(col);
                 double aii = diagonalElements.get(col);
                 double rowValue = multiplyAndSum(column, previous);
-                rowValue += (aii * previous.get(col));
+                rowValue += aii * previous.get(col);
                 x.put(col, rowValue);
             }
             latch.countDown();

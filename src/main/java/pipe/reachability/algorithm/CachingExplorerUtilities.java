@@ -2,6 +2,7 @@ package pipe.reachability.algorithm;
 
 import uk.ac.imperial.pipe.animation.AnimationLogic;
 import uk.ac.imperial.pipe.animation.PetriNetAnimationLogic;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.models.petrinet.Place;
 import uk.ac.imperial.pipe.models.petrinet.Token;
 import uk.ac.imperial.pipe.models.petrinet.Transition;
@@ -67,7 +68,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      * @return map of successor states to the transitions that caused them
      */
     @Override
-    public Map<ClassifiedState, Collection<Transition>> getSuccessorsWithTransitions(ClassifiedState state) {
+    public final Map<ClassifiedState, Collection<Transition>> getSuccessorsWithTransitions(ClassifiedState state) {
 
         if (cachedSuccessors.containsKey(state)) {
             return cachedSuccessors.get(state);
@@ -87,12 +88,12 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     @Override
-    public Collection<ClassifiedState> getSuccessors(ClassifiedState state) {
+    public final Collection<ClassifiedState> getSuccessors(ClassifiedState state) {
         return getSuccessorsWithTransitions(state).keySet();
     }
 
     @Override
-    public double rate(ClassifiedState state, ClassifiedState successor) {
+    public final double rate(ClassifiedState state, ClassifiedState successor) throws InvalidRateException {
         Collection<Transition> transitionsToSuccessor = getTransitions(state, successor);
         return getWeightOfTransitions(state, transitionsToSuccessor);
     }
@@ -105,7 +106,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      * @return current state of the Petri net
      */
     @Override
-    public ClassifiedState getCurrentState() {
+    public final ClassifiedState getCurrentState() {
         HashedStateBuilder builder = new HashedStateBuilder();
         for (Place place : petriNet.getPlaces()) {
             for (Token token : petriNet.getTokens()) {
@@ -115,7 +116,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
 
         State state = builder.build();
         boolean tanigble = isTangible(state);
-        return (tanigble ? HashedClassifiedState.tangibleState(state) : HashedClassifiedState.vanishingState(state));
+        return tanigble ? HashedClassifiedState.tangibleState(state) : HashedClassifiedState.vanishingState(state);
     }
 
     /**
@@ -124,9 +125,9 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      * @param state
      * @return classified state
      */
-    public ClassifiedState classify(State state) {
+    public final ClassifiedState classify(State state) {
         boolean tanigble = isTangible(state);
-        return (tanigble ? HashedClassifiedState.tangibleState(state) : HashedClassifiedState.vanishingState(state));
+        return tanigble ? HashedClassifiedState.tangibleState(state) : HashedClassifiedState.vanishingState(state);
     }
 
     /**
@@ -163,7 +164,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      * an empty Collection will be returned
      */
     @Override
-    public Collection<Transition> getTransitions(ClassifiedState state, ClassifiedState successor) {
+    public final Collection<Transition> getTransitions(ClassifiedState state, ClassifiedState successor) {
         Map<ClassifiedState, Collection<Transition>> stateTransitions = getSuccessorsWithTransitions(state);
 
         if (stateTransitions.containsKey(successor)) {
@@ -183,7 +184,8 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      * @return summed up the weight of the transitions specified
      */
     @Override
-    public double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions) {
+    public final double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions)
+            throws InvalidRateException {
         double weight = 0;
 
         StateEvalVisitor evalVisitor = new StateEvalVisitor(petriNet, state);
@@ -193,7 +195,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
             if (!results.hasErrors()) {
                 weight += results.getResult();
             } else {
-                //TODO:
+                throw new InvalidRateException("Invalid functional expression observed for transition : " + transition.getId() + " "+ transition.getRateExpr());
             }
         }
         return weight;
@@ -204,7 +206,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      * @return all enabled transitions for the specified state
      */
     @Override
-    public Collection<Transition> getAllEnabledTransitions(ClassifiedState state) {
+    public final Collection<Transition> getAllEnabledTransitions(ClassifiedState state) {
         Collection<Transition> results = new LinkedList<>();
         for (Collection<Transition> transitions : getSuccessorsWithTransitions(state).values()) {
             results.addAll(transitions);
@@ -213,7 +215,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
         cachedSuccessors.clear();
         animationLogic.clear();
     }

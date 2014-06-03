@@ -14,23 +14,38 @@ import java.util.concurrent.*;
 /**
  * This explores individual states on seperate threads and then joins
  * their results together on the master thread.
- *
+ * <p/>
  * Yields speed ups for larger state spaces but is marginally slower for smaller ones
  */
-public class IndividualParallelStateSpaceExplorer extends AbstractStateSpaceExplorer {
+public final class IndividualParallelStateSpaceExplorer extends AbstractStateSpaceExplorer {
+    /**
+     * The number of threads to use
+     */
+    private static final int THREADS = 8;
+
+    /**
+     * Used for submitting tasks to
+     */
+    protected ExecutorService executorService;
 
     public IndividualParallelStateSpaceExplorer(StateProcessor stateProcessor, VanishingExplorer vanishingExplorer,
                                                 ExplorerUtilities explorerUtilities) {
         super(explorerUtilities, vanishingExplorer, stateProcessor);
-        executorService = Executors.newFixedThreadPool(8);
+        executorService = Executors.newFixedThreadPool(THREADS);
 
     }
-    protected ExecutorService executorService;
 
+    /**
+     * Explores the state space one state at a time on multiple threads
+     *
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws TimelessTrapException
+     */
     @Override
     protected void stateSpaceExploration() throws InterruptedException, ExecutionException, TimelessTrapException {
         if (executorService.isTerminated()) {
-            executorService = Executors.newFixedThreadPool(8);
+            executorService = Executors.newFixedThreadPool(THREADS);
         }
         int elemsAtCurrentLevel = explorationQueue.size();
         int elemsAtNextLevel = 0;
@@ -47,7 +62,6 @@ public class IndividualParallelStateSpaceExplorer extends AbstractStateSpaceExpl
             latch.await();
             for (Map.Entry<ClassifiedState, Future<Map<ClassifiedState, Double>>> entry : successorFutures.entrySet()) {
                 Future<Map<ClassifiedState, Double>> future = entry.getValue();
-                ClassifiedState state = entry.getKey();
                 successorRates.clear();
 
                 try {
@@ -63,8 +77,9 @@ public class IndividualParallelStateSpaceExplorer extends AbstractStateSpaceExpl
                         }
                     }
                 } catch (ExecutionException ee) {
-                    throw new TimelessTrapException();
+                    throw new TimelessTrapException(ee);
                 }
+                ClassifiedState state = entry.getKey();
                 writeStateTransitions(state, successorRates);
             }
             elemsAtCurrentLevel = elemsAtNextLevel;

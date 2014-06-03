@@ -7,7 +7,7 @@ import uk.ac.imperial.state.ClassifiedState;
  * USed for the state space exploration algorithm to perform on the fly
  * elimination of vanishing states.
  */
-public class StateRateRecord {
+public final class StateRateRecord {
 
     /**
      * State

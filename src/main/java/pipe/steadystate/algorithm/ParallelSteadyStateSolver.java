@@ -16,16 +16,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Used to solve the Jacobi and Power implementations for solving the steady state
  * Both methods use slightly different techniques to solve slightly different matrices
  * so they each define their own runnable class to call each iteration on.
  */
-public class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
+public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
+    /**
+     * Number of threads to solve with
+     */
     private final int threads;
 
+    /**
+     * Builds different steady state solvers
+     */
     private final SteadyStateBuilder builder;
+
+    private static final Logger LOGGER = Logger.getLogger(ParallelSteadyStateSolver.class.getName());
+
 
     public ParallelSteadyStateSolver(int threads, SteadyStateBuilder builder) {
         this.threads = threads;
@@ -43,10 +54,8 @@ public class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
         try {
             if (isDiagonallyDominant(QTranspose, newDiagonals)) {
-                System.out.println("Solve with Jacobi!");
                 return solveWithJacobi(records, executorService);
             }
-            System.out.println("Solve with Jacobi&GS!");
             return solveWithJacobiAndGS(records, executorService);
         }   finally{
             executorService.shutdownNow();
@@ -74,7 +83,7 @@ public class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         try {
             return completionService.take().get();
         } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.getMessage());
             return new HashMap<>();
         }
         finally {
@@ -124,7 +133,7 @@ public class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         return rowSum;
     }
 
-    private static class CallableSteadyStateSolver implements Callable<Map<Integer, Double>> {
+    private static final class CallableSteadyStateSolver implements Callable<Map<Integer, Double>> {
 
         private final SteadyStateSolver solver;
 
@@ -136,7 +145,7 @@ public class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         }
 
         @Override
-        public Map<Integer, Double> call() throws Exception {
+        public Map<Integer, Double> call() {
             return solver.solve(records);
         }
     }

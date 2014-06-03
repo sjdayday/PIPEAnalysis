@@ -1,6 +1,6 @@
 package pipe.reachability.algorithm;
 
-import pipe.reachability.algorithm.TimelessTrapException;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
 
 import java.io.IOException;
@@ -27,12 +27,12 @@ public interface StateSpaceExplorer {
      * @return number of transitions explored
      */
     StateSpaceExplorerResults generate(ClassifiedState initialState)
-            throws TimelessTrapException, InterruptedException, ExecutionException, IOException;
+            throws TimelessTrapException, InterruptedException, ExecutionException, IOException, InvalidRateException;
 
     /**
      * Results to return from state space exploration
      */
-    public class StateSpaceExplorerResults {
+    class StateSpaceExplorerResults {
         public final int processedTransitions;
         public final int numberOfStates;
 

@@ -6,6 +6,7 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import pipe.reachability.algorithm.*;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.exceptions.PetriNetComponentNotFoundException;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.parsers.UnparsableException;
@@ -74,7 +75,8 @@ public class StateSpaceExplorerStepDefinitions {
     }
 
     @When("^I generate the exploration graph (sequentially|in parallel)$")
-    public void I_generate_the_exploration_graph(String parallel) throws IOException, ExecutionException, InterruptedException {
+    public void I_generate_the_exploration_graph(String parallel)
+            throws IOException, ExecutionException, InterruptedException, InvalidRateException {
         ExplorerUtilities explorerUtilities = new UnboundedExplorerUtilities(petriNet);
         processStateSpace(parallel, explorerUtilities);
     }
@@ -85,19 +87,21 @@ public class StateSpaceExplorerStepDefinitions {
     }
 
     @When("^I generate the exploration graph (sequentially|in parallel) with a fully explored bound of (\\d+)$")
-    public void I_generate_the_bounded_exploration_graph(String parallel, int bound) throws IOException, ExecutionException, InterruptedException {
+    public void I_generate_the_bounded_exploration_graph(String parallel, int bound)
+            throws IOException, ExecutionException, InterruptedException, InvalidRateException {
             ExplorerUtilities explorerUtilities = new BoundedExplorerUtilities(petriNet, bound);
             processStateSpace(parallel, explorerUtilities);
     }
 
     @When("^I generate the coverability graph (sequentially|in parallel)$")
-    public void I_generate_the_coverability_graph(String parallel) throws IOException, ExecutionException, InterruptedException {
+    public void I_generate_the_coverability_graph(String parallel)
+            throws IOException, ExecutionException, InterruptedException, InvalidRateException {
         ExplorerUtilities explorerUtilities = new CoverabilityExplorerUtilities(new UnboundedExplorerUtilities(petriNet));
         processStateSpace(parallel, explorerUtilities);
     }
 
     private void processStateSpace(String parallel, ExplorerUtilities explorerUtilities)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, InvalidRateException {
         try {
             Utils.StateSpaceResult result;
             if (parallel.isEmpty()) {

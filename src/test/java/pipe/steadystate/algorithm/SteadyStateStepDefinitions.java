@@ -7,6 +7,7 @@ import cucumber.api.java.en.When;
 import pipe.reachability.TangibleOnlyUtils;
 import pipe.reachability.algorithm.TimelessTrapException;
 import pipe.reachability.algorithm.UnboundedExplorerUtilities;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.parsers.UnparsableException;
 import uk.ac.imperial.state.ClassifiedState;
@@ -49,7 +50,8 @@ public class SteadyStateStepDefinitions {
     }
 
     @When("^I calculate the steady state using (a|an) (sequential|parallel jacobi|parallel power) solver")
-    public void I_calculate_the_steady_state(String a, String method) throws InterruptedException, ExecutionException, IOException {
+    public void I_calculate_the_steady_state(String a, String method)
+            throws InterruptedException, ExecutionException, IOException, InvalidRateException {
         try {
             TangibleOnlyUtils utils = new TangibleOnlyUtils();
             Utils.StateSpaceResult result = Utils.performStateSpaceExplore(utils, new UnboundedExplorerUtilities(petriNet));

@@ -3,7 +3,7 @@ package pipe.steadystate.algorithm;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GaussianEliminationSolver extends AXEqualsBSolver {
+public final class GaussianEliminationSolver extends AXEqualsBSolver {
     @Override
     protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
@@ -37,7 +37,7 @@ public class GaussianEliminationSolver extends AXEqualsBSolver {
                 sum += aij*xj;
             }
             double aii = get(i, i, records);
-            double xi = -(sum)/aii;
+            double xi = -sum/aii;
             x.put(i, xi);
         }
         return x;
@@ -61,7 +61,8 @@ public class GaussianEliminationSolver extends AXEqualsBSolver {
                     double aij = get(i, j, records);
                     double akj = get(k, j, records);
                     aij = aij - mik * akj;
-                    records.get(i).put(j, aij); // Replace
+                    // Replace
+                    records.get(i).put(j, aij);
                 }
             }
         }

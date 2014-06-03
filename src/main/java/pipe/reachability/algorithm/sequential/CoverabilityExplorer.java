@@ -2,13 +2,14 @@ package pipe.reachability.algorithm.sequential;
 
 import pipe.reachability.algorithm.*;
 import uk.ac.imperial.io.StateProcessor;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 
-public class CoverabilityExplorer extends AbstractStateSpaceExplorer{
+public final class CoverabilityExplorer extends AbstractStateSpaceExplorer {
 
     public CoverabilityExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                 StateProcessor stateProcessor) {
@@ -17,7 +18,7 @@ public class CoverabilityExplorer extends AbstractStateSpaceExplorer{
 
     @Override
     protected void stateSpaceExploration()
-            throws InterruptedException, ExecutionException, TimelessTrapException, IOException {
+            throws InterruptedException, ExecutionException, TimelessTrapException, IOException, InvalidRateException {
         while (!explorationQueue.isEmpty()) {
             ClassifiedState state = explorationQueue.poll();
             successorRates.clear();

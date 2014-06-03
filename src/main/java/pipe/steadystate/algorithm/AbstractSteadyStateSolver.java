@@ -35,7 +35,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      * @param records
      * @return transpose of records with each integer state mapping to its successors
      */
-    protected Map<Integer, Map<Integer, Double>> transpose(List<Record> records) {
+    protected final Map<Integer, Map<Integer, Double>> transpose(List<Record> records) {
         Map<Integer, Map<Integer, Double>> transpose = new HashMap<>();
         for (Record record : records) {
             Integer state = record.state;
@@ -62,7 +62,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      * @param diagonals
      * @return a > max |a_ii|
      */
-    protected double geta(Map<Integer, Double> diagonals) {
+    protected final double geta(Map<Integer, Double> diagonals) {
         List<Double> values = new ArrayList<>(diagonals.values());
         double largest = Math.abs(values.get(0));
         for (double value : values) {
@@ -91,7 +91,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
     }
 
     @Override
-    public Map<Integer, Double> solve(String path) throws IOException {
+    public final Map<Integer, Double> solve(String path) throws IOException {
         try {
             List<Record> records = loadRecords(path);
             return solve(records);
@@ -110,7 +110,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
         }
     }
 
-    protected Map<Integer, Double> normalize(Map<Integer, Double> x) {
+    protected final Map<Integer, Double> normalize(Map<Integer, Double> x) {
         double sum = 0;
         for (double value : x.values()) {
             sum += value;
@@ -134,7 +134,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      * @param records
      * @return initial guess for x
      */
-    protected Map<Integer, Double> initialiseXWithGuess(Map<Integer, Map<Integer, Double>> records) {
+    protected final Map<Integer, Double> initialiseXWithGuess(Map<Integer, Map<Integer, Double>> records) {
         Map<Integer, Double> x = new HashMap<>();
         for (Integer state : records.keySet()) {
             x.put(state, 1.0);
@@ -151,7 +151,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      * @param x current guess for x
      * @return
      */
-    protected double multiplyAndSum(Map<Integer, Double> row, Map<Integer, Double> x) {
+    protected final double multiplyAndSum(Map<Integer, Double> row, Map<Integer, Double> x) {
         double sum = 0;
         for (Map.Entry<Integer, Double> entry : row.entrySet()) {
             Integer state = entry.getKey();
@@ -173,7 +173,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      * @param records
      * @return diagonal values of the A matrix
      */
-    protected Map<Integer, Double> calculateDiagonals(List<Record> records) {
+    protected final Map<Integer, Double> calculateDiagonals(List<Record> records) {
         Map<Integer, Double> diagonals = new HashMap<>();
         for (Record record : records) {
             double rowSum = 0;
@@ -193,7 +193,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      * @param a
      * @return divided matrix
      */
-    protected List<Record> divide(List<Record> A, double a) {
+    protected final List<Record> divide(List<Record> A, double a) {
         List<Record> results = new ArrayList<>();
         for (Record record : A) {
             results.add(new Record(record.state, divide(a, record.successors)));
@@ -208,7 +208,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      * @param row
      * @return
      */
-    protected Map<Integer, Double> divide(double a, Map<Integer, Double> row) {
+    protected final Map<Integer, Double> divide(double a, Map<Integer, Double> row) {
         Map<Integer, Double> divided = new HashMap<>();
         for (Map.Entry<Integer, Double> entry1 : row.entrySet()) {
             divided.put(entry1.getKey(), entry1.getValue() / a);

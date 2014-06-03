@@ -1,5 +1,6 @@
 package pipe.reachability.algorithm;
 
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
 
 import java.util.Collection;
@@ -19,5 +20,6 @@ public interface VanishingExplorer {
      * @return Collection of states found to explore whilst processing the vanishing state
      * @throws TimelessTrapException
      */
-    Collection<StateRateRecord> explore(ClassifiedState vanishingState, double rate) throws TimelessTrapException;
+    Collection<StateRateRecord> explore(ClassifiedState vanishingState, double rate)
+            throws TimelessTrapException, InvalidRateException;
 }

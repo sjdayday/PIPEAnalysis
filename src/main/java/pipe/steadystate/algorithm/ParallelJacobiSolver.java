@@ -3,14 +3,19 @@ package pipe.steadystate.algorithm;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Solves a matrix via the Jacobi iteration.
- *
+ * <p/>
  * Note that convergence is only guaranteed for diagonally dominant matrices, so this should
  * be checked before solve is called. Failing that solve may hang indefinitely.
  */
 class ParallelJacobiSolver extends AXEqualsBSolver {
+
+    private static final Logger LOGGER = Logger.getLogger(ParallelJacobiSolver.class.getName());
+
 
     /**
      * Number of threads to run in parallel on the CPU
@@ -23,40 +28,42 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
     private final ExecutorService executorService;
 
     /**
-     *
-     * @param threads Number of threads Jacobi should be solved with for each
-     *                iteration
+     * @param threads         Number of threads Jacobi should be solved with for each
+     *                        iteration
      * @param executorService service to submit tasks to
      */
     public ParallelJacobiSolver(int threads, ExecutorService executorService) {
         this.threads = threads;
         this.executorService = executorService;
     }
+
     @Override
     protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
         ParallelSubmitter submitter = new ParallelSubmitter();
-        Map<Integer, Double> x = submitter.solve(threads, executorService, initialiseXWithGuess(records), records, diagonalElements, new ParallelSubmitter.ParallelUtils() {
-            @Override
-            public boolean isConverged(Map<Integer, Double> previousX, Map<Integer, Double> x,
-                                       Map<Integer, Map<Integer, Double>> records,
-                                       Map<Integer, Double> diagonalElements) {
-                return hasConverged(records, diagonalElements, x);
-            }
+        Map<Integer, Double> x =
+                submitter.solve(threads, executorService, initialiseXWithGuess(records), records, diagonalElements,
+                        new ParallelSubmitter.ParallelUtils() {
+                            @Override
+                            public boolean isConverged(Map<Integer, Double> previousX, Map<Integer, Double> x,
+                                                       Map<Integer, Map<Integer, Double>> records,
+                                                       Map<Integer, Double> diagonalElements) {
+                                return hasConverged(records, diagonalElements, x);
+                            }
 
-            @Override
-            public Runnable createRunnable(int from, int to, CountDownLatch latch, Map<Integer, Double> previousX,
-                                           Map<Integer, Double> x, Map<Integer, Map<Integer, Double>> records,
-                                           Map<Integer, Double> diagonalElements) {
-                return new ParallelSolver(from, to, latch, previousX, records, x, diagonalElements);
-            }
-        });
+                            @Override
+                            public Runnable createRunnable(int from, int to, CountDownLatch latch,
+                                                           Map<Integer, Double> previousX, Map<Integer, Double> x,
+                                                           Map<Integer, Map<Integer, Double>> records,
+                                                           Map<Integer, Double> diagonalElements) {
+                                return new ParallelSolver(from, to, latch, previousX, records, x, diagonalElements);
+                            }
+                        });
 
-        System.out.println("JACOBI DONE :)");
         return normalize(x);
     }
 
-    private class ParallelSolver implements Runnable {
+    private final class ParallelSolver implements Runnable {
         /**
          * Previous value of x
          */
@@ -105,9 +112,8 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
                     x.put(state, rowValue);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-            }finally {
-
+                LOGGER.log(Level.SEVERE, e.getMessage());
+            } finally {
                 latch.countDown();
             }
         }

@@ -2,6 +2,7 @@ package pipe.reachability.algorithm.sequential;
 
 import pipe.reachability.algorithm.*;
 import uk.ac.imperial.io.StateProcessor;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.Collection;
  * Vanishing states can be explored in numerous ways so a {@link pipe.reachability.algorithm.VanishingExplorer}
  * is used to determine how to process them.
  */
-public class SequentialStateSpaceExplorer extends AbstractStateSpaceExplorer {
+public final class SequentialStateSpaceExplorer extends AbstractStateSpaceExplorer {
 
 
     public SequentialStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
@@ -25,10 +26,9 @@ public class SequentialStateSpaceExplorer extends AbstractStateSpaceExplorer {
      * popping a state off the stack and exploring all its successors.
      * <p/>
      * It records the reachability graph into the writer
-     *
      */
     @Override
-    protected void stateSpaceExploration() throws TimelessTrapException, IOException {
+    protected void stateSpaceExploration() throws TimelessTrapException, IOException, InvalidRateException {
         while (!explorationQueue.isEmpty() && explorerUtilities.canExploreMore(stateCount)) {
             ClassifiedState state = explorationQueue.poll();
             successorRates.clear();

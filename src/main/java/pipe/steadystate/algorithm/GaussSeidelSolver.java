@@ -1,11 +1,14 @@
 package pipe.steadystate.algorithm;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Solves the Steady state (Ax = 0) using Gauss Seidel iterative techniques
  */
-public class GaussSeidelSolver extends AXEqualsBSolver {
+public final class GaussSeidelSolver extends AXEqualsBSolver {
+    private static final Logger LOGGER = Logger.getLogger(GaussSeidelSolver.class.getName());
 
     /**
      * Solves Ax = b where b is all zeros in the case of steady state.
@@ -33,8 +36,8 @@ public class GaussSeidelSolver extends AXEqualsBSolver {
             converged = hasConverged(records, diagonalElements, x);
             iterations++;
         }
-        System.out.println("took " + iterations + " iterations to converge!");
-        System.out.println("GS DONE :)");
+
+        LOGGER.log(Level.INFO, String.format("Took %d iterations to converge", iterations));
         return normalize(x);
     }
 

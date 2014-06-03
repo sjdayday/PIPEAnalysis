@@ -4,6 +4,7 @@ import pipe.reachability.algorithm.ExplorerUtilities;
 import pipe.reachability.algorithm.StateRateRecord;
 import pipe.reachability.algorithm.TimelessTrapException;
 import pipe.reachability.algorithm.VanishingExplorer;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
 
 import java.util.Collection;
@@ -18,7 +19,7 @@ import java.util.concurrent.CountDownLatch;
  * of the state.
  *
  */
-public class ParallelStateExplorer implements Callable<Map<ClassifiedState, Double>> {
+public final class ParallelStateExplorer implements Callable<Map<ClassifiedState, Double>> {
 
     /**
      * Count down latch, this value is decremented once the call method
@@ -57,7 +58,7 @@ public class ParallelStateExplorer implements Callable<Map<ClassifiedState, Doub
      * @return successors
      */
     @Override
-    public Map<ClassifiedState, Double> call() throws TimelessTrapException {
+    public Map<ClassifiedState, Double> call() throws TimelessTrapException, InvalidRateException {
         try {
             Map<ClassifiedState, Double> stateRates = new HashMap<>();
             for (ClassifiedState successor : explorerUtilities.getSuccessors(state)) {

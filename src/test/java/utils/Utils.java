@@ -12,6 +12,7 @@ import uk.ac.imperial.io.EntireStateReader;
 import uk.ac.imperial.io.KryoStateIO;
 import uk.ac.imperial.io.MultiStateReader;
 import uk.ac.imperial.io.StateProcessor;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.io.PetriNetIOImpl;
 import uk.ac.imperial.pipe.io.PetriNetReader;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
@@ -44,7 +45,7 @@ public class Utils {
     }
 
     public static StateSpaceResult performStateSpaceExplore(StateExplorerUtils utils, ExplorerUtilities explorerUtilities)
-            throws IOException, ExecutionException, InterruptedException, TimelessTrapException {
+            throws IOException, ExecutionException, InterruptedException, TimelessTrapException, InvalidRateException {
         KryoStateIO kryoIo = new KryoStateIO();
         int processedTransitons = 0;
         try (ByteArrayOutputStream transitionByteStream = new ByteArrayOutputStream();
@@ -70,7 +71,7 @@ public class Utils {
     }
 
     public static StateSpaceResult performParallelStateSpaceExplore(StateExplorerUtils utils, ExplorerUtilities explorerUtilities)
-            throws IOException, ExecutionException, InterruptedException, TimelessTrapException {
+            throws IOException, ExecutionException, InterruptedException, TimelessTrapException, InvalidRateException {
         KryoStateIO kryoIo = new KryoStateIO();
         int processedTransitons = 0;
         try (ByteArrayOutputStream transitionByteStream = new ByteArrayOutputStream();

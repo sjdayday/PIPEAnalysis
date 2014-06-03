@@ -1,6 +1,7 @@
 package pipe.reachability.algorithm;
 
 import uk.ac.imperial.io.StateProcessor;
+import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
 import uk.ac.imperial.state.State;
 import uk.ac.imperial.utils.ExploredSet;
@@ -10,6 +11,12 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
+    /**
+     * Prime number for the explored set size, trade off between wasted memory
+     * and saturation avoidance
+     */
+    private static final int EXPLORED_SET_SIZE = 300007;
+
     /**
      * Used for processing transitions
      */
@@ -32,7 +39,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      */
     protected final Map<ClassifiedState, Double> successorRates = new HashMap<>();
 
-
     /**
      * Performs useful state calculations
      */
@@ -50,14 +56,14 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     protected ExploredSet explored;
 
     /**
-     * Number of states that have been processed during exploraton
-     */
-    private int processedCount = 0;
-
-    /**
      * This value is used to give a unique number to each state seen
      */
     protected int stateCount = 0;
+
+    /**
+     * Number of states that have been processed during exploraton
+     */
+    private int processedCount = 0;
 
     public AbstractStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                       StateProcessor stateProcessor) {
@@ -67,8 +73,8 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     }
 
     @Override
-    public StateSpaceExplorerResults generate(ClassifiedState initialState)
-            throws TimelessTrapException, InterruptedException, ExecutionException, IOException {
+    public final StateSpaceExplorerResults generate(ClassifiedState initialState)
+            throws TimelessTrapException, InterruptedException, ExecutionException, IOException, InvalidRateException {
         initialiseExplored(initialState);
         exploreInitialState(initialState);
         stateSpaceExploration();
@@ -78,15 +84,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     private void initialiseExplored(State state) {
         List<String> placeOrder = getPlaceNames(state);
-        explored = new ExploredSet(300007, placeOrder);
-    }
-
-    /**
-     * @param state
-     * @return List of place names contained in state
-     */
-    private List<String> getPlaceNames(State state) {
-        return new LinkedList<>(state.getPlaces());
+        explored = new ExploredSet(EXPLORED_SET_SIZE, placeOrder);
     }
 
     /**
@@ -99,7 +97,8 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      *
      * @param initialState starting state of the algorithm
      */
-    protected void exploreInitialState(ClassifiedState initialState) throws TimelessTrapException {
+    protected final void exploreInitialState(ClassifiedState initialState)
+            throws TimelessTrapException, InvalidRateException {
         if (initialState.isTangible()) {
             explorationQueue.add(initialState);
             markAsExplored(initialState);
@@ -113,7 +112,15 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     }
 
     protected abstract void stateSpaceExploration()
-            throws InterruptedException, ExecutionException, TimelessTrapException, IOException;
+            throws InterruptedException, ExecutionException, TimelessTrapException, IOException, InvalidRateException;
+
+    /**
+     * @param state
+     * @return List of place names contained in state
+     */
+    private List<String> getPlaceNames(State state) {
+        return new LinkedList<>(state.getPlaces());
+    }
 
     /**
      * Adds a compressed version of a tangible state to exploredStates
@@ -121,26 +128,11 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      *
      * @param state state that has been explored
      */
-    protected void markAsExplored(ClassifiedState state) {
+    protected final void markAsExplored(ClassifiedState state) {
         int uniqueNumber = getUniqueStateNumber();
         if (!explored.contains(state)) {
             stateProcessor.processState(state, uniqueNumber);
             explored.add(state, uniqueNumber);
-        }
-    }
-
-    /**
-     * Marks each state in explored as explored if it is not already in the explored set.
-     * <p/>
-     * It must do the contains check to ensure it does not get two different unique numbers
-     *
-     * @param exploredStates
-     */
-    protected void markAsExplored(Set<ClassifiedState> exploredStates) {
-        for (ClassifiedState state : exploredStates) {
-            if (!explored.contains(state)) {
-                markAsExplored(state);
-            }
         }
     }
 
@@ -151,12 +143,21 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      * @param successor state that is possible via an enabled transition from state
      * @param rate      rate at which state transitions to successor
      */
-    protected void registerStateTransition(ClassifiedState successor, double rate) {
+    protected final void registerStateTransition(ClassifiedState successor, double rate) {
         registerStateRate(successor, rate);
         if (!explored.contains(successor)) {
             explorationQueue.add(successor);
             markAsExplored(successor);
         }
+    }
+
+    /**
+     * @return a unique number for every state
+     */
+    private int getUniqueStateNumber() {
+        int number = stateCount;
+        stateCount++;
+        return number;
     }
 
     /**
@@ -168,12 +169,27 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      * @param successor key to successor rates
      * @param rate      rate at which successor is entered via some transition
      */
-    protected void registerStateRate(ClassifiedState successor, double rate) {
+    protected final void registerStateRate(ClassifiedState successor, double rate) {
         if (successorRates.containsKey(successor)) {
             double previousRate = successorRates.get(successor);
             successorRates.put(successor, previousRate + rate);
         } else {
             successorRates.put(successor, rate);
+        }
+    }
+
+    /**
+     * Marks each state in explored as explored if it is not already in the explored set.
+     * <p/>
+     * It must do the contains check to ensure it does not get two different unique numbers
+     *
+     * @param exploredStates
+     */
+    protected final void markAsExplored(Set<ClassifiedState> exploredStates) {
+        for (ClassifiedState state : exploredStates) {
+            if (!explored.contains(state)) {
+                markAsExplored(state);
+            }
         }
     }
 
@@ -188,7 +204,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      * @param state          the current state that successors belong to
      * @param successorRates
      */
-    protected void writeStateTransitions(ClassifiedState state, Map<ClassifiedState, Double> successorRates) {
+    protected final void writeStateTransitions(ClassifiedState state, Map<ClassifiedState, Double> successorRates) {
         Map<Integer, Double> transitions = getIntegerTransitions(successorRates);
         int stateId = explored.getId(state);
         stateProcessor.processTransitions(stateId, transitions);
@@ -198,17 +214,9 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     private Map<Integer, Double> getIntegerTransitions(Map<ClassifiedState, Double> successorRates) {
         Map<Integer, Double> transitions = new HashMap<>();
         for (Map.Entry<ClassifiedState, Double> entry : successorRates.entrySet()) {
-            transitions.put(explored.getId(entry.getKey()), entry.getValue());
+            int id = explored.getId(entry.getKey());
+            transitions.put(id, entry.getValue());
         }
         return transitions;
-    }
-
-    /**
-     * @return a unique number for every state
-     */
-    private int getUniqueStateNumber() {
-        int number = stateCount;
-        stateCount++;
-        return number;
     }
 }
