@@ -19,6 +19,11 @@ public final class StateRateRecord {
      */
     private double rate;
 
+    /**
+     * Constructor that sets the state and rate for the record
+     * @param state
+     * @param rate
+     */
     public StateRateRecord(ClassifiedState state, double rate) {
         this.state = state;
         this.rate = rate;

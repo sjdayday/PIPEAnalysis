@@ -28,6 +28,12 @@ public final class IndividualParallelStateSpaceExplorer extends AbstractStateSpa
      */
     protected ExecutorService executorService;
 
+    /**
+     * Constructor for creating the state space explorer
+     * @param stateProcessor
+     * @param vanishingExplorer
+     * @param explorerUtilities
+     */
     public IndividualParallelStateSpaceExplorer(StateProcessor stateProcessor, VanishingExplorer vanishingExplorer,
                                                 ExplorerUtilities explorerUtilities) {
         super(explorerUtilities, vanishingExplorer, stateProcessor);

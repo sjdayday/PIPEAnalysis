@@ -17,6 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Abstract class used to solve the steady state, contains useful methods and constants
+ * that subclasses may use.
+ */
 public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
     /**
      * Epsilon value used for testing if gauss seidel has converged.
@@ -110,6 +114,11 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
         }
     }
 
+    /**
+     * Normalises x by dividing every value in it by its total sum
+     * @param x
+     * @return normalised x
+     */
     protected final Map<Integer, Double> normalize(Map<Integer, Double> x) {
         double sum = 0;
         for (double value : x.values()) {

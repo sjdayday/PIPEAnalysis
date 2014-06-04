@@ -35,14 +35,31 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
      */
     private final SteadyStateBuilder builder;
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = Logger.getLogger(ParallelSteadyStateSolver.class.getName());
 
 
+    /**
+     * Constructor
+     * @param threads
+     * @param builder
+     */
     public ParallelSteadyStateSolver(int threads, SteadyStateBuilder builder) {
         this.threads = threads;
         this.builder = builder;
     }
 
+    /**
+     * Solves the steady state heuristically by calculating if Jacobi is guaranteed to converge
+     * if so it uses all threas on the Jacobi method
+     *
+     * Otherwise it spins up a sequential Gauss Seidel to solve in a single thread and Jacobi in the
+     * rest and takes the first result which converges
+     * @param records
+     * @return steady state x
+     */
     @Override
     public Map<Integer, Double> solve(List<Record> records) {
         Map<Integer, Double> diagonals = calculateDiagonals(records);
@@ -93,6 +110,12 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         }
     }
 
+    /**
+     * Solves the steady state entirely with jacobi
+     * @param records
+     * @param executorService
+     * @return normalized steady state
+     */
     private Map<Integer, Double> solveWithJacobi(List<Record> records, ExecutorService executorService) {
         SteadyStateSolver solver = builder.buildJacobi(executorService, threads);
         return solver.solve(records);
@@ -102,7 +125,7 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
      * Matrix is diagonally dominant if |a_ii| >= sum_for_all_i_neq_j |a_ij|
      * @param records
      * @param diagonalElements
-     * @return
+     * @return true if diagonally dominant
      */
     private boolean isDiagonallyDominant(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
@@ -116,6 +139,16 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         return true;
     }
 
+    /**
+     * Submits to the completionService the steady state solvers to run.
+     *
+     * Steady state solvers can be one or more and it will return the futures that are running
+     *
+     * @param completionService
+     * @param records
+     * @param solvers
+     * @return futures that are now running
+     */
     private List<Future<Map<Integer, Double>>> submit(CompletionService<Map<Integer, Double>> completionService,
                                                       List<Record> records, SteadyStateSolver... solvers) {
         List<Future<Map<Integer, Double>>> futures = new ArrayList<>();
@@ -125,6 +158,11 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         return futures;
     }
 
+    /**
+     *
+     * @param entry
+     * @return absolute sum of the rows of the entry
+     */
     private double getAbsRowSum(Map.Entry<Integer, Map<Integer, Double>> entry) {
         double rowSum = 0;
         for (double value : entry.getValue().values()) {
@@ -133,6 +171,9 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         return rowSum;
     }
 
+    /**
+     * Callable task that performs the solving of the steady state
+     */
     private static final class CallableSteadyStateSolver implements Callable<Map<Integer, Double>> {
 
         private final SteadyStateSolver solver;

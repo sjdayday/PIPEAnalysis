@@ -3,7 +3,18 @@ package pipe.steadystate.algorithm;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Solves Ax = b via a sequential Gaussian elimination
+ */
 public final class GaussianEliminationSolver extends AXEqualsBSolver {
+
+    /**
+     * Reduces the records to an upper triangle and then performs back substitution to calculate the
+     * values of x
+     * @param records
+     * @param diagonalElements
+     * @return normalised steady state
+     */
     @Override
     protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
@@ -26,6 +37,14 @@ public final class GaussianEliminationSolver extends AXEqualsBSolver {
 
     }
 
+    /**
+     *
+     * Assuming records is an upper reduced triangle back substitution
+     * can be applied to solve for values of x
+     *
+     * @param records records in an upper reduced triangle form
+     * @return unnormalized x
+     */
     private Map<Integer, Double> backSubstitute(Map<Integer, Map<Integer, Double>> records) {
         Map<Integer, Double> x = new HashMap<>();
         x.put(records.size() -1 , 1.);

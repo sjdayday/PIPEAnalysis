@@ -9,6 +9,20 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * Performs a parallel state space exploration using 8 threads.
+ * At every iteration of the exploration these threads are submitted with a
+ * maximum number of states they can fully explore before returning with
+ * their results.
+ *
+ * In effect this state space exploration is a thread level map reduce where states are
+ * mapped onto threads and at the end of their run the results are reduced down into a
+ * single result.
+ *
+ * The iteration then continues performing another map reduce with the left over states
+ * to explore from the previous iteration.
+ *
+ */
 public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplorer {
     /**
      * The number of threads that this class will use to explore the state space
@@ -26,6 +40,14 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
     protected ExecutorService executorService;
 
 
+    /**
+     * Constructor for generating massive state space exploration
+     * @param explorerUtilities
+     * @param vanishingExplorer
+     * @param stateProcessor
+     * @param statesPerThread the number of states to allow each thread to explore in a single iteration
+     *                        before returning to join the results together
+     */
     public MassiveParallelStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                              StateProcessor stateProcessor, int statesPerThread) {
         super(explorerUtilities, vanishingExplorer, stateProcessor);
@@ -199,6 +221,11 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
             return new Result(transitions, unexplored, exploredStates);
         }
 
+        /**
+         * Puts the successor and rate into the successor rates map.
+         * If an entry already exists for the state then the rate is
+         * summed within the rate.
+         */
         /**
          * @param successor
          * @param rate

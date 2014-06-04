@@ -44,10 +44,28 @@ public final class OnTheFlyVanishingExplorer implements VanishingExplorer {
     private final ExplorerUtilities explorerUtilities;
 
 
+    /**
+     * Constructor that takes the exploration utilities for generating reachability/coverability graphs
+     * @param explorerUtilities
+     */
     public OnTheFlyVanishingExplorer(ExplorerUtilities explorerUtilities) {
         this.explorerUtilities = explorerUtilities;
     }
 
+    /**
+     * Explores a vanishing state by processing its successors until either no vanishing states
+     * are left or ALLOWED_ITERATIONS has been reached in the case of a cycle
+     *
+     * Whilst performing this processing, any tangible states seen are registered with the current
+     * rate at which the state transitions into them. If we see a transition more than once then its rate
+     * is summed.
+     *
+     * @param vanishingState vanishing state to explore.
+     * @param rate rate at which vanishingState is entered from the previous state
+     * @return tangible transitions that the vanishing state transitions to.
+     * @throws TimelessTrapException
+     * @throws InvalidRateException
+     */
     @Override
     public Collection<StateRateRecord> explore(ClassifiedState vanishingState, double rate)
             throws TimelessTrapException, InvalidRateException {

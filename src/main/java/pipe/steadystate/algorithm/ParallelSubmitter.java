@@ -16,6 +16,9 @@ import java.util.logging.Logger;
  */
 class ParallelSubmitter {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = Logger.getLogger(ParallelSubmitter.class.getName());
 
     /**
@@ -49,6 +52,19 @@ class ParallelSubmitter {
         return x;
     }
 
+    /**
+     * Splits the solving of x across the number of threads. For example if x is an 8x8 matrix and there are two
+     * threads then each thread will solve 4 rows. If x is a 10x10 matrix and there are 3 threads then
+     * two threads will solve 3 rows and one thread wills solve 4 rows.
+     * @param utils
+     * @param threads
+     * @param records
+     * @param diagonalElements
+     * @param executorService
+     * @param x
+     * @param previous
+     * @return
+     */
     private CountDownLatch submitTasks(ParallelUtils utils, int threads, Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements,
                                        ExecutorService executorService, Map<Integer, Double> x, Map<Integer, Double> previous
     ) {
@@ -72,7 +88,13 @@ class ParallelSubmitter {
     }
 
 
-
+    /**
+     * Since Java 7 does not support lambda functions this utilities class has to suffice as a method
+     * for determining convergence of the steady state.
+     *
+     * Classes who use the {@link pipe.steadystate.algorithm.ParallelSubmitter} will need
+     * to implement the methods in here.
+     */
     public interface ParallelUtils {
         boolean isConverged(Map<Integer, Double> previousX, Map<Integer, Double> x,
                             Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements);

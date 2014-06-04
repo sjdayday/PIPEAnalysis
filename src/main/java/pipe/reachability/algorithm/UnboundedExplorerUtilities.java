@@ -17,6 +17,11 @@ public final class UnboundedExplorerUtilities extends CachingExplorerUtilities {
         super(petriNet);
     }
 
+    /**
+     *
+     * @param stateCount
+     * @return true because this is an unbounded implementation
+     */
     @Override
     public boolean canExploreMore(int stateCount) {
         return true;

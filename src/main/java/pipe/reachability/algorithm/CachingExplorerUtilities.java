@@ -87,11 +87,23 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
         return classifiedSuccessors;
     }
 
+    /**
+     *
+     * @param state state in the Petri net to find successors of
+     * @return the successors of this state
+     */
     @Override
     public final Collection<ClassifiedState> getSuccessors(ClassifiedState state) {
         return getSuccessorsWithTransitions(state).keySet();
     }
 
+    /**
+     *
+     * @param state
+     * @param successor
+     * @return the rate at which the state transitions to the successor in the underlying Petri net
+     * @throws InvalidRateException
+     */
     @Override
     public final double rate(ClassifiedState state, ClassifiedState successor) throws InvalidRateException {
         Collection<Transition> transitionsToSuccessor = getTransitions(state, successor);
@@ -120,7 +132,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     /**
-     * Classifies the state
+     * Classifies the state into tangible or vanishing
      *
      * @param state
      * @return classified state
@@ -170,8 +182,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
         if (stateTransitions.containsKey(successor)) {
             return stateTransitions.get(successor);
         }
-
-
         return new LinkedList<>();
     }
 
@@ -214,6 +224,9 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
         return results;
     }
 
+    /**
+     * Clears the cached successors and any caching that is done via the animationLogic class
+     */
     @Override
     public final void clear() {
         cachedSuccessors.clear();

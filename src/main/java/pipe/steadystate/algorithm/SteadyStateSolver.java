@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Steady state solver interface that all implementing algorithms will adhere to
+ */
 public interface SteadyStateSolver {
 
     /**

@@ -14,6 +14,9 @@ import java.util.logging.Logger;
  */
 class ParallelJacobiSolver extends AXEqualsBSolver {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = Logger.getLogger(ParallelJacobiSolver.class.getName());
 
 
@@ -37,6 +40,16 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
         this.executorService = executorService;
     }
 
+    /**
+     * Solves the matrix via a parallel jacobi. The submitted tasks of each iteration each perform the new
+     * calculation of x_i for a specified number of rows.
+     *
+     * Iterations continue until x converges
+     *
+     * @param records
+     * @param diagonalElements
+     * @return normalized x
+     */
     @Override
     protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
@@ -63,12 +76,18 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
         return normalize(x);
     }
 
+    /**
+     * Parallel solver task
+     */
     private final class ParallelSolver implements Runnable {
         /**
          * Previous value of x
          */
         private final Map<Integer, Double> previous;
 
+        /**
+         * Sparse matrix A, missing the diagonal elements
+         */
         private final Map<Integer, Map<Integer, Double>> records;
 
         /**
@@ -76,6 +95,9 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
          */
         private final Map<Integer, Double> x;
 
+        /**
+         * Diagonal elements of A
+         */
         private final Map<Integer, Double> diagonalElements;
 
         /**
@@ -88,8 +110,21 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
          */
         private final int to;
 
+        /**
+         * Latch to decrement when finished processing
+         */
         private final CountDownLatch latch;
 
+        /**
+         * Initialises this task with the information it needs
+         * @param from
+         * @param to
+         * @param latch
+         * @param previous
+         * @param records
+         * @param x
+         * @param diagonalElements
+         */
         private ParallelSolver(int from, int to, CountDownLatch latch, Map<Integer, Double> previous,
                                Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> x,
                                Map<Integer, Double> diagonalElements) {
@@ -102,6 +137,10 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
             this.to = to;
         }
 
+        /**
+         * Solves for the next value of x for the rows from to to
+         * Decrements the latch on finishing
+         */
         @Override
         public void run() {
             try {

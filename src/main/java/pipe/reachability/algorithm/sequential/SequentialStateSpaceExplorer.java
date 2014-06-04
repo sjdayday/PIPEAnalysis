@@ -16,6 +16,14 @@ import java.util.Collection;
 public final class SequentialStateSpaceExplorer extends AbstractStateSpaceExplorer {
 
 
+    /**
+     * Constructor for generating a single thread state space explorer
+     * @param explorerUtilities utilities to use for exploration, can be used to generate the reachability graph
+     *                          or the coverability graph
+     * @param vanishingExplorer exploring algorithm for processing vanishing states, can be used to include them
+     *                          in the graphs or to remove them on the fly
+     * @param stateProcessor processor for actually writing out the results
+     */
     public SequentialStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                         StateProcessor stateProcessor) {
         super(explorerUtilities, vanishingExplorer, stateProcessor);

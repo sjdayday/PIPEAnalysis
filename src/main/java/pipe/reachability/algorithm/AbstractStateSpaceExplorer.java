@@ -10,6 +10,12 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Abstract state space explorer that contains useful methods for exploring the state space.
+ *
+ * The actual exploration method is delgated to subclasses
+ *
+ */
 public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
      * Prime number for the explored set size, trade off between wasted memory
@@ -72,6 +78,17 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
         this.stateProcessor = stateProcessor;
     }
 
+    /**
+     * Generates the state space from the initial state
+     *
+     * @param initialState starting state for exploration.
+     * @return
+     * @throws TimelessTrapException
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws IOException
+     * @throws InvalidRateException
+     */
     @Override
     public final StateSpaceExplorerResults generate(ClassifiedState initialState)
             throws TimelessTrapException, InterruptedException, ExecutionException, IOException, InvalidRateException {
@@ -82,6 +99,11 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     }
 
+    /**
+     * Initialises the explored set with the states place ordering and
+     * the explored set size
+     * @param state
+     */
     private void initialiseExplored(State state) {
         List<String> placeOrder = getPlaceNames(state);
         explored = new ExploredSet(EXPLORED_SET_SIZE, placeOrder);
@@ -111,6 +133,17 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     }
 
+    /**
+     * Abstratc method which performs the actual state space exploration algorithm.
+     * This algorithm should make use of the explorationQueue and will write the results out
+     * via the stateProcessor
+     *
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws TimelessTrapException
+     * @throws IOException
+     * @throws InvalidRateException
+     */
     protected abstract void stateSpaceExploration()
             throws InterruptedException, ExecutionException, TimelessTrapException, IOException, InvalidRateException;
 
@@ -211,6 +244,14 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
         processedCount += successorRates.size();
     }
 
+    /**
+     *
+     * Modifies the successorRates map to replace the key with it's integer representation
+     * that is stored in the explored set
+     *
+     * @param successorRates
+     * @return a map of the successors integer id to the successor rate
+     */
     private Map<Integer, Double> getIntegerTransitions(Map<ClassifiedState, Double> successorRates) {
         Map<Integer, Double> transitions = new HashMap<>();
         for (Map.Entry<ClassifiedState, Double> entry : successorRates.entrySet()) {

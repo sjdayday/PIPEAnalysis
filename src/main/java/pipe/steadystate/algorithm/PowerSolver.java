@@ -8,11 +8,26 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * Solves xA = x via the power method in parallel which just
+ * performs the multiplication of xA until convergence
+ */
 class PowerSolver extends AbstractSteadyStateSolver {
+    /**
+     * Number of threads to use
+     */
     private final int threads;
 
+    /**
+     * Executor service that tasks are submitted to for solving xA = b
+     */
     private final ExecutorService executorService;
 
+    /**
+     * Constructor
+     * @param threads
+     * @param executorService
+     */
     public PowerSolver(int threads, ExecutorService executorService) {
         this.threads = threads;
         this.executorService = executorService;
@@ -28,6 +43,14 @@ class PowerSolver extends AbstractSteadyStateSolver {
     protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> recordsTransposed, Map<Integer, Double> diagonalElements) {
         ParallelSubmitter submitter = new ParallelSubmitter();
         Map<Integer, Double> x = submitter.solve(threads, executorService, initialiseXWithGuess(recordsTransposed), recordsTransposed, diagonalElements, new ParallelSubmitter.ParallelUtils() {
+            /**
+             *
+             * @param previousX
+             * @param x
+             * @param records
+             * @param diagonalElements
+             * @return true if xA = x which is the convergence critetia for a DTMC
+             */
             @Override
             public boolean isConverged(Map<Integer, Double> previousX, Map<Integer, Double> x,
                                        Map<Integer, Map<Integer, Double>> records,
@@ -35,6 +58,17 @@ class PowerSolver extends AbstractSteadyStateSolver {
                 return hasConverged(previousX, x);
             }
 
+            /**
+             * Creates a parallel solver runnable
+             * @param from
+             * @param to
+             * @param latch
+             * @param previousX
+             * @param x
+             * @param records
+             * @param diagonalElements
+             * @return
+             */
             @Override
             public Runnable createRunnable(int from, int to, CountDownLatch latch, Map<Integer, Double> previousX,
                                            Map<Integer, Double> x, Map<Integer, Map<Integer, Double>> records,
@@ -60,6 +94,11 @@ class PowerSolver extends AbstractSteadyStateSolver {
         return result;
     }
 
+    /**
+     * Solves xA = x in parallel
+     * @param records A matrix
+     * @return steady state
+     */
     @Override
     public Map<Integer, Double> solve(List<Record> records) {
 
@@ -87,6 +126,12 @@ class PowerSolver extends AbstractSteadyStateSolver {
         return (subtractedNorm/previousNorm) < EPSILON;
     }
 
+    /**
+     *
+     * @param a
+     * @param b
+     * @return a - b
+     */
     private Map<Integer, Double> subtract(Map<Integer, Double> a, Map<Integer,Double>b ) {
         Map<Integer, Double> subtracted = new HashMap<>();
         for (Map.Entry<Integer, Double> entry : a.entrySet()) {
@@ -98,6 +143,11 @@ class PowerSolver extends AbstractSteadyStateSolver {
         return subtracted;
     }
 
+    /**
+     *
+     * @param x
+     * @return l2 norm of x
+     */
     private double euclidianNorm(Map<Integer, Double> x) {
         double sum = 0;
         for (double value : x.values()) {
@@ -106,12 +156,18 @@ class PowerSolver extends AbstractSteadyStateSolver {
         return Math.sqrt(sum);
     }
 
+    /**
+     * Solver task for solving the steady state via the power method
+     */
     private final class ParallelSolver implements Runnable {
         /**
          * Previous value of x
          */
         private final Map<Integer, Double> previous;
 
+        /**
+         * Sparse A matrix, minus the diagonal elements
+         */
         private final Map<Integer, Map<Integer, Double>> records;
 
         /**
@@ -119,6 +175,9 @@ class PowerSolver extends AbstractSteadyStateSolver {
          */
         private final Map<Integer, Double> x;
 
+        /**
+         * Diagonal elements of the A matrix
+         */
         private final Map<Integer, Double> diagonalElements;
 
         /**
@@ -131,8 +190,21 @@ class PowerSolver extends AbstractSteadyStateSolver {
          */
         private final int to;
 
+        /**
+         * Countdown latch to decrement after finishing the task
+         */
         private final CountDownLatch latch;
 
+        /**
+         * Constructor for initialising this task ready to solve an iteration of the power method
+         * @param from
+         * @param to
+         * @param latch
+         * @param previous
+         * @param records
+         * @param x
+         * @param diagonalElements
+         */
         private ParallelSolver(int from, int to, CountDownLatch latch, Map<Integer, Double> previous,
                                Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> x,
                                Map<Integer, Double> diagonalElements) {
@@ -145,6 +217,10 @@ class PowerSolver extends AbstractSteadyStateSolver {
             this.to = to;
         }
 
+        /**
+         * Calculates the new values of x for the specified from, to range.
+         * Decrements the count down latch once finished.
+         */
         @Override
         public void run() {
             for (int col = from; col <= to; col++) {

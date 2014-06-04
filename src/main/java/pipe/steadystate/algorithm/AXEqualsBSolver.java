@@ -36,6 +36,12 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
     }
 
 
+    /**
+     * Abstract method which delagates solving to subclasses who solve in the form Ax = b
+     * @param records
+     * @param diagonalElements
+     * @return solved steady state
+     */
     protected abstract Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
                                                   Map<Integer, Double> diagonalElements);
 

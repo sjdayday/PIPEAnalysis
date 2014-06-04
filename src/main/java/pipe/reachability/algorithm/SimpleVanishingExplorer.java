@@ -10,6 +10,13 @@ import java.util.Collection;
  * returns them to the user to be explored normally
  */
 public final class SimpleVanishingExplorer implements VanishingExplorer {
+    /**
+     *
+     * @param vanishingState vanishing state to explore.
+     * @param rate rate at which vanishingState is entered from the previous state
+     * @return the exact vanishing state to explore
+     * @throws TimelessTrapException
+     */
     @Override
     public Collection<StateRateRecord> explore(ClassifiedState vanishingState, double rate)
             throws TimelessTrapException {

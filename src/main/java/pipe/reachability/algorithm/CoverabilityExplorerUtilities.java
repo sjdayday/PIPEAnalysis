@@ -12,46 +12,62 @@ import java.util.*;
 
 /**
  * This class wraps an ExplorerUtilities with coverability logic.
- *
+ * <p/>
  * Coverability logic follows that given a path x1, x2, ...., xn
  * if for any x < xn xn has tokens greater than or equal to all
  * other token counts then the Petri net will be unbounded and have an
  * infite state space.
- *
+ * <p/>
  * To kirb this explosion we bound the state to have MAX_INT tokens
  * and limit its successors
  */
 public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
 
 
-   private final ExplorerUtilities explorerUtilities;
+    /**
+     * Reachability graph explorer utilities
+     */
+    private final ExplorerUtilities explorerUtilities;
 
-   private final Multimap<ClassifiedState, ClassifiedState> parents = HashMultimap.create();
+    /**
+     * Used to save the parents of classified state when exploring
+     */
+    private final Multimap<ClassifiedState, ClassifiedState> parents = HashMultimap.create();
 
     /**
      * Takes a copy of the Petri net to use for state space exploration so
      * not to affect the reference
      *
-     * @param  utilities explorer utility to wrap with bounded state info
+     * @param utilities explorer utility to wrap with bounded state info
      */
     public CoverabilityExplorerUtilities(ExplorerUtilities utilities) {
         explorerUtilities = utilities;
     }
 
     /**
+     * Finds the successors of the state and registers its parents in the parents multi map
      *
      * @param state state in the Petri net to find successors of
      * @return successors that have potentially been bounded
      */
     @Override
     public Map<ClassifiedState, Collection<Transition>> getSuccessorsWithTransitions(ClassifiedState state) {
-        Map<ClassifiedState, Collection<Transition>> successors =  explorerUtilities.getSuccessorsWithTransitions(state);
-        Map<ClassifiedState, Collection<Transition>> boundedSuccessors = lookForUnbounded(state, successors);
+        Map<ClassifiedState, Collection<Transition>> successors = explorerUtilities.getSuccessorsWithTransitions(state);
+        Map<ClassifiedState, Collection<Transition>> boundedSuccessors = boundSuccessors(state, successors);
         registerParent(state, boundedSuccessors.keySet());
         return boundedSuccessors;
     }
 
-    private Map<ClassifiedState, Collection<Transition>> lookForUnbounded(ClassifiedState state, Map<ClassifiedState, Collection<Transition>> successors) {
+    /**
+     * Looks to see if any of the successors of the given state are unbounded and if so
+     * it will bound them. This is equivalent to setting the unbounded token count to infinity (or max int in Java)
+     *
+     * @param state
+     * @param successors
+     * @return
+     */
+    private Map<ClassifiedState, Collection<Transition>> boundSuccessors(ClassifiedState state,
+                                                                         Map<ClassifiedState, Collection<Transition>> successors) {
         Map<ClassifiedState, Collection<Transition>> boundedSuccessors = new HashMap<>();
         for (Map.Entry<ClassifiedState, Collection<Transition>> entry : successors.entrySet()) {
             ClassifiedState successor = entry.getKey();
@@ -61,6 +77,11 @@ public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
         return boundedSuccessors;
     }
 
+    /**
+     * @param parent
+     * @param state
+     * @return the given state if it does not need bounding, or it bounds the tokens which can be infinite to max int
+     */
     private ClassifiedState getBoundedState(ClassifiedState parent, ClassifiedState state) {
         Queue<ClassifiedState> ancestors = new ArrayDeque<>();
         Set<ClassifiedState> exploredAncestors = new HashSet<>();
@@ -81,6 +102,17 @@ public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
         return state;
     }
 
+    /**
+     * Works by looking at the ancestors and seeing if for every token in every place the ancestor has
+     * less tokens than the given state. If any ancestors do not then the state is considered bounded
+     * <p/>
+     * E.g. for a given state (0, 1) the ancestor (1, 0) is bounded because the first value of the ancestor is
+     * larger, but if is an ancestor (0, 0) too then the state is unbounded because all of its tokens are >= the state
+     *
+     * @param state
+     * @param ancestor
+     * @return true if the given state is unbounded (ie will produce an infinite state space)
+     */
     private boolean isUnbounded(ClassifiedState state, ClassifiedState ancestor) {
         for (String place : state.getPlaces()) {
             for (Map.Entry<String, Integer> entry : state.getTokens(place).entrySet()) {
@@ -95,6 +127,13 @@ public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
         return true;
     }
 
+    /**
+     * Binds the state by working out which place and which token fails the ancestor rule
+     *
+     * @param state
+     * @param ancestor
+     * @return bounded state
+     */
     private ClassifiedState boundState(ClassifiedState state, ClassifiedState ancestor) {
         HashedStateBuilder builder = new HashedStateBuilder();
         for (String place : state.getPlaces()) {
@@ -117,6 +156,7 @@ public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
 
     /**
      * Registers state as parents successors
+     *
      * @param state
      * @param successors
      */
@@ -126,37 +166,69 @@ public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
         }
     }
 
+    /**
+     * @param state state in the Petri net to find successors of
+     * @return bound successors of state
+     */
     @Override
     public Collection<ClassifiedState> getSuccessors(ClassifiedState state) {
         return getSuccessorsWithTransitions(state).keySet();
     }
 
+    /**
+     * @param state
+     * @param successor
+     * @return the rate at which state transitions to successor in the underlying Petri net
+     * @throws InvalidRateException
+     */
+    //TODO: This currently does not work for bound states :( Ask Will what to do
     @Override
     public double rate(ClassifiedState state, ClassifiedState successor) throws InvalidRateException {
         return explorerUtilities.rate(state, successor);
     }
 
+    /**
+     * @return the underlying state of the Petri net
+     */
     @Override
     public ClassifiedState getCurrentState() {
         return explorerUtilities.getCurrentState();
     }
 
+    /**
+     * @param state     initial state
+     * @param successor successor state, must be directly reachable from the state
+     * @return transitions that when enabled will cause state to transition to successor
+     */
     @Override
     public Collection<Transition> getTransitions(ClassifiedState state, ClassifiedState successor) {
         return explorerUtilities.getTransitions(state, successor);
     }
 
+    /**
+     * @param state
+     * @param transitions
+     * @return the weight of the transitions from the state
+     * @throws InvalidRateException
+     */
     @Override
     public double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions)
             throws InvalidRateException {
         return explorerUtilities.getWeightOfTransitions(state, transitions);
     }
 
+    /**
+     * @param state state in the Petri net to determine enabled transitions of
+     * @return all transitions which are enabled when in this state
+     */
     @Override
     public Collection<Transition> getAllEnabledTransitions(ClassifiedState state) {
         return explorerUtilities.getAllEnabledTransitions(state);
     }
 
+    /**
+     * Clears the explorer utilities cache
+     */
     @Override
     public void clear() {
         explorerUtilities.clear();
