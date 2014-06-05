@@ -1,8 +1,9 @@
 package pipe.steadystate.algorithm;
 
+import org.cliffc.high_scale_lib.NonBlockingHashMap;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
@@ -33,7 +34,8 @@ class ParallelSubmitter {
      */
     public Map<Integer, Double> solve(int threads, ExecutorService executorService, Map<Integer, Double> firstGuess, Map<Integer, Map<Integer, Double>> records,
                     Map<Integer, Double> diagonalElements, ParallelUtils utils) {
-        Map<Integer, Double> x = new ConcurrentHashMap<>(firstGuess);
+        Map<Integer, Double> x = new NonBlockingHashMap<>();
+        x.putAll(firstGuess);
         Map<Integer, Double> previous = new HashMap<>(x);
         boolean converged = false;
         int iterations = 0;
@@ -48,7 +50,7 @@ class ParallelSubmitter {
             previous = new HashMap<>(x);
             iterations++;
         }
-        LOGGER.log(Level.INFO, String.format("Took %d iterations to converge", iterations));
+        LOGGER.log(Level.INFO, String.format("Parallel implementation took %d iterations to converge", iterations));
         return x;
     }
 

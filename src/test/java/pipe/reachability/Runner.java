@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -36,12 +37,62 @@ public class Runner {
     public static void main(String[] args)
             throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
             IOException, InvalidRateException {
+        run("/medium_complex_102400.xml");
 //        run("/medium_complex3.xml");
 //        run("/medium_complex_286720.xml");
-        PetriNet petriNet = Utils.readPetriNet("/complex_color.xml");
-        processSequential(petriNet);
+//        PetriNet petriNet = Utils.readPetriNet("/steady_state_petri_nets/run5.xml");
+//        Results r1 = processParallel(petriNet, 200);
+//        Results r2 = processSequential(petriNet);
+//        debugBizarreResults(r1, r2);
 
+    }
 
+    private static void debugBizarreResults(Results r1, Results r2) {
+        Map<ClassifiedState, Map<ClassifiedState, Double>> full1 = fullStateSpace(r1);
+        Map<ClassifiedState, Map<ClassifiedState, Double>> full2 = fullStateSpace(r2);
+
+        int i = 0;
+        for (Map.Entry<ClassifiedState, Map<ClassifiedState, Double>> e : full1.entrySet()) {
+            ClassifiedState state = e.getKey();
+            Map<ClassifiedState, Double> parallel = e.getValue();
+            Map<ClassifiedState, Double> sequential = full2.get(state);
+            if (parallel.size() != sequential.size()) {
+                System.out.println("PARALLEL != SEQUENTIAL for state " + state);
+                for (ClassifiedState succ : parallel.keySet()) {
+                    System.out.println("SUCCESSORS: " + succ);
+                }
+                int debug_size = 1;
+            }
+            if (!parallel.equals(sequential)) {
+                int debug_equality = 2;
+            }
+        }
+        System.out.println(r1.equals(r2));
+    }
+
+    private static Map<ClassifiedState, Map<ClassifiedState, Double>> fullStateSpace(Results results) {
+        Map<ClassifiedState, Map<ClassifiedState, Double>> full = new HashMap<>();
+        for (Map.Entry<Integer, Map<Integer, Double>> entry : results.transitions.entrySet()) {
+            full.put(results.states.get(entry.getKey()), intToState(results.states, entry.getValue()));
+        }
+
+        return full;
+    }
+
+    private static Map<ClassifiedState, Double> intToState(Map<Integer, ClassifiedState> stateMappings, Map<Integer, Double> rates) {
+        Map<ClassifiedState, Double> result = new HashMap<>();
+        for (Map.Entry<Integer, Double> entry : rates.entrySet()) {
+            result.put(stateMappings.get(entry.getKey()), entry.getValue());
+        }
+        return result;
+    }
+
+    private static Map<Integer, Map<Integer, Double>> recordToMap(List<Record> records) {
+        Map<Integer, Map<Integer, Double>> results = new HashMap<>();
+        for (Record record : records) {
+            results.put(record.state, record.successors);
+        }
+        return results;
     }
 
     private static void foo()
@@ -77,6 +128,8 @@ public class Runner {
         System.gc();
         System.out.println("************************");
         processParallel(petriNet, 500);
+        System.out.println("************************");
+        processParallel(petriNet, 200);
         System.gc();
         System.out.println("************************");
         processParallel(petriNet, 100);
@@ -87,7 +140,7 @@ public class Runner {
         System.out.println("************************");
     }
 
-    private static void processSequential(PetriNet petriNet)
+    private static Results processSequential(PetriNet petriNet)
             throws IOException, InterruptedException, TimelessTrapException, ExecutionException, InvalidRateException {
 
         TangibleOnlyUtils utils = new TangibleOnlyUtils();
@@ -115,15 +168,14 @@ public class Runner {
                 Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
 
 
-                GaussSeidelSolver solver = new GaussSeidelSolver();
+//                GaussSeidelSolver solver = new GaussSeidelSolver();
 //                Map<Integer, Double> steadyState = solve(solver, records, "Gauss Seidel");
-
-
+                return new Results(recordToMap(records), mappings);
             }
         }
     }
 
-    private static void processParallel(PetriNet petriNet, int statesPerThread)
+    private static Results processParallel(PetriNet petriNet, int statesPerThread)
             throws IOException, InterruptedException, TimelessTrapException, ExecutionException, InvalidRateException {
 
         TangibleOnlyUtils utils = new TangibleOnlyUtils();
@@ -147,17 +199,18 @@ public class Runner {
                  InputStream stateStream = Files.newInputStream(state);
                  Input inputStream = new Input(transitionInputStream);
                  Input stateInputStream = new Input(stateStream)) {
-                MultiStateReader reader = new EntireStateReader(kryoIo);
+                EntireStateReader reader = new EntireStateReader(kryoIo);
                 List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
                 Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
 
-                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
-                ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
-                Map<Integer, Double> steadyState = solve(solver, records, "Parallel");
-                System.out.println("----------------------");
+//                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
+//                ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
+//                Map<Integer, Double> steadyState = solve(solver, records, "Parallel");
+//                System.out.println("----------------------");
 //                GaussSeidelSolver gaussSeidelSolver = new GaussSeidelSolver();
 //                solve(gaussSeidelSolver, records, "Gauss Seidel");
 
+                return new Results(recordToMap(records), mappings);
 
             }
         }
@@ -190,5 +243,15 @@ public class Runner {
         System.out.println("Processed transitions: " + result.processedTransitions);
         System.out.println("In time: " + duration);
         System.out.println(result.numberOfStates + " different states");
+    }
+
+    private static class Results {
+        final Map<Integer, Map<Integer, Double>> transitions;
+        final Map<Integer, ClassifiedState> states;
+
+        private Results(Map<Integer, Map<Integer, Double>> transitions, Map<Integer, ClassifiedState> states) {
+            this.transitions = transitions;
+            this.states = states;
+        }
     }
 }
