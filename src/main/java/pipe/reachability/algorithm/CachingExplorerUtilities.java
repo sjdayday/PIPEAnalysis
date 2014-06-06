@@ -16,9 +16,7 @@ import uk.ac.imperial.state.ClassifiedState;
 import uk.ac.imperial.state.HashedClassifiedState;
 import uk.ac.imperial.state.HashedStateBuilder;
 import uk.ac.imperial.state.State;
-import uk.ac.imperial.utils.StateUtils;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -71,9 +69,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      */
     @Override
     public final Map<ClassifiedState, Collection<Transition>> getSuccessorsWithTransitions(ClassifiedState state) {
-        if (state.equals(getDebug())) {
-            int d = 2;
-        }
         if (cachedSuccessors.containsKey(state)) {
             return cachedSuccessors.get(state);
         }
@@ -88,27 +83,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
 
         cachedSuccessors.put(state, classifiedSuccessors);
         return classifiedSuccessors;
-    }
-
-
-
-        private ClassifiedState getDebug() {
-        try {
-            return StateUtils.tangibleStateFromJson("{\"P28\": {\"Default\": 0},\"P29\": {\"Default\": 0},\"P26\": {\"Default\": 0},\"P27\": {\"Default\": 0},\"P24\": {\"Default\": 1},\"P25\": {\"Default\": 0},\"P22\": {\"Default\": 0},\"P23\": {\"Default\": 0},\"P21\": {\"Default\": 0},\"P20\": {\"Default\": 0},\"P12\": {\"Default\": 0},\"P11\": {\"Default\": 0},\"P14\": {\"Default\": 0},\"P13\": {\"Default\": 0},\"P16\": {\"Default\": 0},\"P9\": {\"Default\": 0},\"P15\": {\"Default\": 1},\"P8\": {\"Default\": 1},\"P18\": {\"Default\": 1},\"P17\": {\"Default\": 1},\"P5\": {\"Default\": 1},\"P19\": {\"Default\": 0},\"P4\": {\"Default\": 0},\"P7\": {\"Default\": 0},\"P6\": {\"Default\": 1},\"P1\": {\"Default\": 0},\"P0\": {\"Default\": 0},\"P3\": {\"Default\": 0},\"P2\": {\"Default\": 0},\"P30\": {\"Default\": 0},\"P31\": {\"Default\": 1},\"P10\": {\"Default\": 0}}"
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("DEBUG!");
-        }
-    }
-
-    private ClassifiedState getDebugSuccessor() {
-        try {
-            return StateUtils.tangibleStateFromJson("{\"P28\": {\"Default\": 0}, \"P29\": {\"Default\": 1}, \"P26\": {\"Default\": 0}, \"P27\": {\"Default\": 0}, \"P24\": {\"Default\": 0}, \"P25\": {\"Default\": 0}, \"P22\": {\"Default\": 1}, \"P23\": {\"Default\": 0}, \"P21\": {\"Default\": 0}, \"P20\": {\"Default\": 1}, \"P12\": {\"Default\": 0}, \"P11\": {\"Default\": 0}, \"P14\": {\"Default\": 0}, \"P13\": {\"Default\": 0}, \"P16\": {\"Default\": 0}, \"P9\": {\"Default\": 1}, \"P15\": {\"Default\": 0}, \"P8\": {\"Default\": 0}, \"P18\": {\"Default\": 0}, \"P17\": {\"Default\": 0}, \"P5\": {\"Default\": 0}, \"P19\": {\"Default\": 0}, \"P4\": {\"Default\": 0}, \"P7\": {\"Default\": 0}, \"P6\": {\"Default\": 0}, \"P1\": {\"Default\": 0}, \"P0\": {\"Default\": 1}, \"P3\": {\"Default\": 1}, \"P2\": {\"Default\": 0}, \"P30\": {\"Default\": 1}, \"P31\": {\"Default\": 0}, \"P10\": {\"Default\": 1}}");
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("DEBUG!");
-        }
     }
 
     /**

@@ -1,5 +1,8 @@
 package pipe.reachability.algorithm.parallel;
 
+import com.google.common.collect.Sets;
+import org.cliffc.high_scale_lib.NonBlockingHashMap;
+import org.cliffc.high_scale_lib.NonBlockingHashSet;
 import pipe.reachability.algorithm.*;
 import uk.ac.imperial.io.StateProcessor;
 import uk.ac.imperial.pipe.exceptions.InvalidRateException;
@@ -38,6 +41,17 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      * Executor service used to submit tasks to
      */
     protected ExecutorService executorService;
+
+    /**
+     * Used to store visited transitions during iterations
+     */
+    private Map<ClassifiedState, Map<ClassifiedState, Double>> iterationTransitions = new NonBlockingHashMap<>();
+
+    /**
+     * States that have been explored whilst exploring exploreCount states
+     */
+    private final Set<ClassifiedState> exploredStates = new NonBlockingHashSet<>();
+
 
 
     /**
@@ -87,27 +101,37 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
             }
 
 
-            Set<ClassifiedState> transitions = new HashSet<>();
-            Collection<ClassifiedState> unexplored = new HashSet<>();
+//            Set<ClassifiedState> transitions = new HashSet<>();
+            Set<ClassifiedState> unexplored = new HashSet<>();
             for (int i = 0; i < submitted; i++) {
                 Result result = completionService.take().get();
-                markAsExplored(result.explored);
+
+//                markAsExplored(result.explored);
                 unexplored.addAll(result.unexplored);
 
                 //Combine results to avoid writing dups
-                for (Map.Entry<ClassifiedState, Map<ClassifiedState, Double>> entry : result.transitions.entrySet()) {
-                    if (!transitions.contains(entry.getKey())) {
-                        writeStateTransitions(entry.getKey(), entry.getValue());
-                        transitions.add(entry.getKey());
-                    }
-                }
+//                for (Map.Entry<ClassifiedState, Map<ClassifiedState, Double>> entry : result.transitions.entrySet()) {
+//                    if (!transitions.contains(entry.getKey())) {
+//                        writeStateTransitions(entry.getKey(), entry.getValue());
+//                        transitions.add(entry.getKey());
+//                    }
+//                }
             }
 
-            for (ClassifiedState state : unexplored) {
-                if (!transitions.contains(state)) {
-                    explorationQueue.add(state);
-                }
+            Set<ClassifiedState> actualUnexplored = Sets.difference(unexplored, iterationTransitions.keySet());
+//            for (ClassifiedState state : unexplored) {
+//                if (!transitions.contains(state)) {
+//                    explorationQueue.add(state);
+//                }
+//            }
+            explorationQueue.addAll(actualUnexplored);
+            markAsExplored(exploredStates);
+            exploredStates.clear();
+
+            for (Map.Entry<ClassifiedState, Map<ClassifiedState, Double>> entry : iterationTransitions.entrySet()) {
+                writeStateTransitions(entry.getKey(), entry.getValue());
             }
+            iterationTransitions.clear();
             explorerUtilities.clear();
         }
 
@@ -120,17 +144,9 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      * Contains data structures to be processed on method completion.
      */
     private static class Result {
-        public final Map<ClassifiedState, Map<ClassifiedState, Double>> transitions;
-
         public final Set<ClassifiedState> unexplored;
-
-        public final Set<ClassifiedState> explored;
-
-        public Result(Map<ClassifiedState, Map<ClassifiedState, Double>> transitions, Set<ClassifiedState> unexplored,
-                      Set<ClassifiedState> explored) {
-            this.transitions = transitions;
+        public Result(Set<ClassifiedState> unexplored) {
             this.unexplored = unexplored;
-            this.explored = explored;
         }
     }
 
@@ -164,12 +180,12 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         /**
          * Transitions found whilst exploring exploreCount states
          */
-        private final Map<ClassifiedState, Map<ClassifiedState, Double>> transitions = new HashMap<>();
+//        private final Map<ClassifiedState, Map<ClassifiedState, Double>> transitions = new HashMap<>();
 
         /**
          * States that have been explored whilst exploring exploreCount states
          */
-        private final Set<ClassifiedState> exploredStates = new HashSet<>();
+//        private final Set<ClassifiedState> exploredStates = new HashSet<>();
 
         private MultiStateExplorer(ClassifiedState initialState, int exploreCount, ExplorerUtilities explorerUtilities,
                                    VanishingExplorer vanishingExplorer) {
@@ -218,7 +234,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
 
             Set<ClassifiedState> unexplored = new HashSet<>();
             unexplored.addAll(explorationQueue);
-            return new Result(transitions, unexplored, exploredStates);
+            return new Result(unexplored);
         }
 
         /**
@@ -256,7 +272,10 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          * @param successorRates
          */
         private void writeStateTransitions(ClassifiedState state, Map<ClassifiedState, Double> successorRates) {
-            transitions.put(state, successorRates);
+            if (!iterationTransitions.containsKey(state)) {
+                iterationTransitions.put(state, successorRates);
+            }
+//            transitions.put(state, successorRates);
         }
     }
 }
