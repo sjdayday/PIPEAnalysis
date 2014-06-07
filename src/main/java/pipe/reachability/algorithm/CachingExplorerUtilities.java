@@ -69,9 +69,14 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      */
     @Override
     public final Map<ClassifiedState, Collection<Transition>> getSuccessorsWithTransitions(ClassifiedState state) {
-
-        if (cachedSuccessors.containsKey(state)) {
-            return cachedSuccessors.get(state);
+        try {
+            if (cachedSuccessors.containsKey(state)) {
+                return cachedSuccessors.get(state);
+            }
+        } catch (Exception e) {
+            System.out.print("STATE " + state);
+            System.out.println(e.toString());
+            int debug = 2;
         }
 
         Map<State, Collection<Transition>> successors = animationLogic.getSuccessors(state);

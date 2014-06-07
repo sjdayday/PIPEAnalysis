@@ -12,9 +12,8 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Abstract state space explorer that contains useful methods for exploring the state space.
- *
+ * <p/>
  * The actual exploration method is delgated to subclasses
- *
  */
 public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
@@ -102,6 +101,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
      * Initialises the explored set with the states place ordering and
      * the explored set size
+     *
      * @param state
      */
     private void initialiseExplored(State state) {
@@ -218,7 +218,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      *
      * @param exploredStates
      */
-    protected final void markAsExplored(Set<ClassifiedState> exploredStates) {
+    protected final void markAsExplored(Collection<ClassifiedState> exploredStates) {
         for (ClassifiedState state : exploredStates) {
             if (!explored.contains(state)) {
                 markAsExplored(state);
@@ -245,7 +245,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     }
 
     /**
-     *
      * Modifies the successorRates map to replace the key with it's integer representation
      * that is stored in the explored set
      *

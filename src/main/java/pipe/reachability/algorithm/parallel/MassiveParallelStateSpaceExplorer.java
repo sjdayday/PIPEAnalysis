@@ -4,6 +4,7 @@ import pipe.reachability.algorithm.*;
 import uk.ac.imperial.io.StateProcessor;
 import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
+import uk.ac.imperial.state.State;
 
 import java.io.IOException;
 import java.util.*;
@@ -42,6 +43,10 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      */
     protected ExecutorService executorService;
 
+    Queue<ClassifiedState> sharedIterationQueue = new ConcurrentLinkedQueue<>();
+    Map<ClassifiedState, Map<ClassifiedState, Double>> iterationTransitions = new ConcurrentHashMap<>();
+    Map<StateHashes, Boolean> sharedHashSeen = new ConcurrentHashMap<>();
+
 
     /**
      * Constructor for generating massive state space exploration
@@ -79,41 +84,30 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
     protected void stateSpaceExploration()
             throws InterruptedException, ExecutionException, TimelessTrapException, IOException {
         executorService = Executors.newFixedThreadPool(THREADS);
-        CompletionService<Result> completionService = new ExecutorCompletionService<>(executorService);
+        CompletionService<Collection<ClassifiedState>> completionService = new ExecutorCompletionService<>(executorService);
         int iterations = 0;
         List<MultiStateExplorer> explorers = initialiseExplorers();
-        while (!explorationQueue.isEmpty() && explorerUtilities.canExploreMore(stateCount)) {
+        sharedIterationQueue.addAll(explorationQueue);
+        while (!sharedIterationQueue.isEmpty() && explorerUtilities.canExploreMore(stateCount)) {
             int submitted = 0;
-            while (submitted < THREADS && !explorationQueue.isEmpty()) {
-                ClassifiedState state = explorationQueue.poll();
+            while (submitted < THREADS && !sharedIterationQueue.isEmpty()) {
                 MultiStateExplorer explorer = explorers.get(submitted);
-                explorer.reset(state);
                 completionService.submit(explorer);
                 submitted++;
             }
 
-
-            Set<ClassifiedState> transitions = new HashSet<>();
-            Collection<ClassifiedState> unexplored = new HashSet<>();
             for (int i = 0; i < submitted; i++) {
-                Result result = completionService.take().get();
-                markAsExplored(result.explored);
-                unexplored.addAll(result.unexplored);
-
-                //Combine results to avoid writing dups
-                for (Map.Entry<ClassifiedState, Map<ClassifiedState, Double>> entry : result.transitions.entrySet()) {
-                    if (!transitions.contains(entry.getKey())) {
-                        writeStateTransitions(entry.getKey(), entry.getValue());
-                        transitions.add(entry.getKey());
-                    }
-                }
+                Collection<ClassifiedState> seen = completionService.take().get();
+                markAsExplored(seen);
             }
 
-            for (ClassifiedState state : unexplored) {
-                if (!transitions.contains(state)) {
-                    explorationQueue.add(state);
-                }
+
+            for (Map.Entry<ClassifiedState, Map<ClassifiedState, Double>> entry : iterationTransitions.entrySet()) {
+                writeStateTransitions(entry.getKey(), entry.getValue());
             }
+
+            sharedHashSeen.clear();
+            iterationTransitions.clear();
             explorerUtilities.clear();
             iterations++;
         }
@@ -131,58 +125,14 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
     }
 
     /**
-     * Basic struct that is return value of call method.
-     * <p/>
-     * Contains data structures to be processed on method completion.
-     */
-    private static class Result {
-        public final Map<ClassifiedState, Map<ClassifiedState, Double>> transitions;
-
-        public final Set<ClassifiedState> unexplored;
-
-        public final Set<ClassifiedState> explored;
-
-        public Result(Map<ClassifiedState, Map<ClassifiedState, Double>> transitions, Set<ClassifiedState> unexplored,
-                      Set<ClassifiedState> explored) {
-            this.transitions = transitions;
-            this.unexplored = unexplored;
-            this.explored = explored;
-        }
-    }
-
-    /**
      * Callable implementation that explores a state and its successors up to a certain
      * depth.
      * <p/>
      * It registers all transitions that it observes
      */
-    private final class MultiStateExplorer implements Callable<Result> {
-        /**
-         * Starting state to explore
-         */
-        private ClassifiedState initialState;
-
-        /**
-         * Transitions found whilst exploring exploreCount states
-         */
-        private final Map<ClassifiedState, Map<ClassifiedState, Double>> transitions = new HashMap<>();
-
-        /**
-         * States that have been explored whilst exploring exploreCount states
-         */
-        private final Set<ClassifiedState> exploredStates = new HashSet<>();
-
+    private final class MultiStateExplorer implements Callable<Collection<ClassifiedState>> {
         private MultiStateExplorer(){}
 
-        private MultiStateExplorer(ClassifiedState initialState) {
-            this.initialState = initialState;
-        }
-
-        public void reset(ClassifiedState initialState) {
-            this.initialState = initialState;
-            transitions.clear();
-            exploredStates.clear();
-        }
 
         /**
          * Performs sequential state space exploration using a BFS up to a certain number
@@ -193,37 +143,43 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          * @throws TimelessTrapException
          */
         @Override
-        public Result call() throws TimelessTrapException, InvalidRateException {
-            Queue<ClassifiedState> explorationQueue = new ArrayDeque<>();
-            explorationQueue.add(initialState);
-            for (int explored = 0; explored < statesPerThread && !explorationQueue.isEmpty(); explored++) {
-                ClassifiedState state = explorationQueue.poll();
+        public Collection<ClassifiedState> call() throws TimelessTrapException, InvalidRateException {
+            Collection<ClassifiedState> seen = new LinkedList<>();
+            for (int explored = 0; explored < statesPerThread; explored++) {
+                ClassifiedState state = sharedIterationQueue.poll();
+                //Test to see if sharedIterationQueue is empty
+                if (state == null) {
+                    return seen;
+                }
                 Map<ClassifiedState, Double> successorRates = new HashMap<>();
                 for (ClassifiedState successor : explorerUtilities.getSuccessors(state)) {
                     double rate = explorerUtilities.rate(state, successor);
                     if (successor.isTangible()) {
                         registerStateRate(successor, rate, successorRates);
                         if (!seen(successor)) {
-                            explorationQueue.add(successor);
-                            exploredStates.add(successor);
+                            sharedIterationQueue.add(successor);
+                            addToSharedSeen(successor);
+                            seen.add(successor);
                         }
                     } else {
                         Collection<StateRateRecord> explorableStates = vanishingExplorer.explore(successor, rate);
                         for (StateRateRecord record : explorableStates) {
                             registerStateRate(record.getState(), record.getRate(), successorRates);
                             if (!seen(record.getState())) {
-                                explorationQueue.add(record.getState());
-                                exploredStates.add(record.getState());
+                                sharedIterationQueue.add(record.getState());
+                                addToSharedSeen(record.getState());
+                                seen.add(successor);
                             }
                         }
                     }
                 }
                 writeStateTransitions(state, successorRates);
             }
+            return seen;
+        }
 
-            Set<ClassifiedState> unexplored = new HashSet<>();
-            unexplored.addAll(explorationQueue);
-            return new Result(transitions, unexplored, exploredStates);
+        private void addToSharedSeen(State state) {
+            sharedHashSeen.put(new StateHashes(state.primaryHash(), state.secondaryHash()), true);
         }
 
         /**
@@ -251,7 +207,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          * @return true if the state has already been explored
          */
         private boolean seen(ClassifiedState state) {
-            return exploredStates.contains(state) || explored.contains(state);
+            return sharedHashSeen.containsKey(new StateHashes(state.primaryHash(), state.secondaryHash())) || explored.contains(state);
         }
 
         /**
@@ -261,7 +217,49 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          * @param successorRates
          */
         private void writeStateTransitions(ClassifiedState state, Map<ClassifiedState, Double> successorRates) {
-            transitions.put(state, successorRates);
+            if (!iterationTransitions.containsKey(state)) {
+                iterationTransitions.put(state, successorRates);
+            }
         }
+    }
+
+    private class StateHashes {
+        private final int hashOne;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof StateHashes)) {
+                return false;
+            }
+
+            StateHashes that = (StateHashes) o;
+
+            if (hashOne != that.hashOne) {
+                return false;
+            }
+            if (hashTwo != that.hashTwo) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = hashOne;
+            result = 31 * result + hashTwo;
+            return result;
+        }
+
+        private StateHashes(int hashOne, int hashTwo) {
+
+            this.hashOne = hashOne;
+            this.hashTwo = hashTwo;
+        }
+
+        private final int hashTwo;
     }
 }

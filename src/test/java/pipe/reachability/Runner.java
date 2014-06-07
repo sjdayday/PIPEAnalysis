@@ -1,30 +1,23 @@
 package pipe.reachability;
 
-import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import pipe.reachability.algorithm.*;
 import pipe.reachability.algorithm.parallel.MassiveParallelStateSpaceExplorer;
 import pipe.reachability.algorithm.sequential.SequentialStateSpaceExplorer;
-import pipe.reachability.algorithm.StateSpaceExplorer;
-import pipe.steadystate.algorithm.*;
-import uk.ac.imperial.io.EntireStateReader;
+import pipe.steadystate.algorithm.SteadyStateSolver;
 import uk.ac.imperial.io.KryoStateIO;
-import uk.ac.imperial.io.MultiStateReader;
 import uk.ac.imperial.io.StateProcessor;
 import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.parsers.UnparsableException;
-import uk.ac.imperial.state.ClassifiedState;
 import uk.ac.imperial.state.Record;
 import utils.Utils;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -36,10 +29,11 @@ public class Runner {
     public static void main(String[] args)
             throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
             IOException, InvalidRateException {
-//        run("/medium_complex3.xml");
+        run("/medium_complex_102400.xml");
 //        run("/medium_complex_286720.xml");
-        PetriNet petriNet = Utils.readPetriNet("/complex_color.xml");
+        PetriNet petriNet = Utils.readPetriNet("/medium_complex_102400.xml");
         processSequential(petriNet);
+        processParallel(petriNet, 100);
 
 
     }
@@ -106,20 +100,20 @@ public class Runner {
 
                 explore(stateSpaceExplorer, explorerUtilities, " Sequential ");
             }
-            try (InputStream transitionInputStream = Files.newInputStream(transitions);
-                 InputStream stateStream = Files.newInputStream(state);
-                 Input inputStream = new Input(transitionInputStream);
-                 Input stateInputStream = new Input(stateStream)) {
-                MultiStateReader reader = new EntireStateReader(kryoIo);
-                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
-                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
-
-
-                GaussSeidelSolver solver = new GaussSeidelSolver();
-//                Map<Integer, Double> steadyState = solve(solver, records, "Gauss Seidel");
-
-
-            }
+//            try (InputStream transitionInputStream = Files.newInputStream(transitions);
+//                 InputStream stateStream = Files.newInputStream(state);
+//                 Input inputStream = new Input(transitionInputStream);
+//                 Input stateInputStream = new Input(stateStream)) {
+//                MultiStateReader reader = new EntireStateReader(kryoIo);
+//                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
+//                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
+//
+//
+//                GaussSeidelSolver solver = new GaussSeidelSolver();
+////                Map<Integer, Double> steadyState = solve(solver, records, "Gauss Seidel");
+//
+//
+//            }
         }
     }
 
@@ -143,23 +137,23 @@ public class Runner {
                 explore(stateSpaceExplorer, explorerUtilities, " Parallel " + statesPerThread);
 
             }
-            try (InputStream transitionInputStream = Files.newInputStream(transitions);
-                 InputStream stateStream = Files.newInputStream(state);
-                 Input inputStream = new Input(transitionInputStream);
-                 Input stateInputStream = new Input(stateStream)) {
-                MultiStateReader reader = new EntireStateReader(kryoIo);
-                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
-                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
-
-                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
-                ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
-                Map<Integer, Double> steadyState = solve(solver, records, "Parallel");
-                System.out.println("----------------------");
-//                GaussSeidelSolver gaussSeidelSolver = new GaussSeidelSolver();
-//                solve(gaussSeidelSolver, records, "Gauss Seidel");
-
-
-            }
+//            try (InputStream transitionInputStream = Files.newInputStream(transitions);
+//                 InputStream stateStream = Files.newInputStream(state);
+//                 Input inputStream = new Input(transitionInputStream);
+//                 Input stateInputStream = new Input(stateStream)) {
+//                MultiStateReader reader = new EntireStateReader(kryoIo);
+//                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
+//                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
+//
+//                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
+//                ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
+//                Map<Integer, Double> steadyState = solve(solver, records, "Parallel");
+//                System.out.println("----------------------");
+////                GaussSeidelSolver gaussSeidelSolver = new GaussSeidelSolver();
+////                solve(gaussSeidelSolver, records, "Gauss Seidel");
+//
+//
+//            }
         }
 
     }
