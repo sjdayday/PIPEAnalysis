@@ -11,6 +11,11 @@ public final class SteadyStateBuilderImpl implements SteadyStateBuilder
     }
 
     @Override
+    public SteadyStateSolver buildSequentialJacobi() {
+        return new SequentialJacobiSolver();
+    }
+
+    @Override
     public SteadyStateSolver buildJacobi(ExecutorService executorService, int threads) {
         return new ParallelJacobiSolver(threads, executorService);
     }

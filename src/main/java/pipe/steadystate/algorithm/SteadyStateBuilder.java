@@ -17,6 +17,12 @@ public interface SteadyStateBuilder {
 
     /**
      *
+     * @return sequential Jacobi solver
+     */
+    SteadyStateSolver buildSequentialJacobi();
+
+    /**
+     *
      * @param executorService
      * @param threads
      * @return Jacobi parallel solver using threads
