@@ -16,20 +16,21 @@ import java.util.logging.Logger;
  * At every iteration of the exploration these threads are submitted with a
  * maximum number of states they can fully explore before returning with
  * their results.
- *
+ * <p/>
  * In effect this state space exploration is a thread level map reduce where states are
  * mapped onto threads and at the end of their run the results are reduced down into a
  * single result.
- *
+ * <p/>
  * The iteration then continues performing another map reduce with the left over states
  * to explore from the previous iteration.
- *
  */
 public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplorer {
     /**
      * The number of threads that this class will use to explore the state space
      */
     private static final int THREADS = 8;
+
+    private static final Logger LOGGER = Logger.getLogger(MassiveParallelStateSpaceExplorer.class.getName());
 
     /**
      * Number of states to analyse sequentially per thread
@@ -41,16 +42,15 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      */
     protected ExecutorService executorService;
 
-    private static final Logger LOGGER = Logger.getLogger(MassiveParallelStateSpaceExplorer.class.getName());
-
 
     /**
      * Constructor for generating massive state space exploration
+     *
      * @param explorerUtilities
      * @param vanishingExplorer
      * @param stateProcessor
-     * @param statesPerThread the number of states to allow each thread to explore in a single iteration
-     *                        before returning to join the results together
+     * @param statesPerThread   the number of states to allow each thread to explore in a single iteration
+     *                          before returning to join the results together
      */
     public MassiveParallelStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                              StateProcessor stateProcessor, int statesPerThread) {
@@ -80,13 +80,15 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
             throws InterruptedException, ExecutionException, TimelessTrapException, IOException {
         executorService = Executors.newFixedThreadPool(THREADS);
         CompletionService<Result> completionService = new ExecutorCompletionService<>(executorService);
-                                            int iterations= 0;
+        int iterations = 0;
+        List<MultiStateExplorer> explorers = initialiseExplorers();
         while (!explorationQueue.isEmpty() && explorerUtilities.canExploreMore(stateCount)) {
             int submitted = 0;
             while (submitted < THREADS && !explorationQueue.isEmpty()) {
                 ClassifiedState state = explorationQueue.poll();
-                completionService.submit(
-                        new MultiStateExplorer(state));
+                MultiStateExplorer explorer = explorers.get(submitted);
+                explorer.reset(state);
+                completionService.submit(explorer);
                 submitted++;
             }
 
@@ -120,6 +122,14 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         LOGGER.log(Level.INFO, String.format("Took %d iterations to explore state space", iterations));
     }
 
+    private List<MultiStateExplorer> initialiseExplorers() {
+        List<MultiStateExplorer> explorers = new ArrayList<>();
+        for (int i =0; i < THREADS; i++) {
+            explorers.add(new MultiStateExplorer());
+        }
+        return explorers;
+    }
+
     /**
      * Basic struct that is return value of call method.
      * <p/>
@@ -150,7 +160,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         /**
          * Starting state to explore
          */
-        private final ClassifiedState initialState;
+        private ClassifiedState initialState;
 
         /**
          * Transitions found whilst exploring exploreCount states
@@ -162,8 +172,16 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          */
         private final Set<ClassifiedState> exploredStates = new HashSet<>();
 
+        private MultiStateExplorer(){}
+
         private MultiStateExplorer(ClassifiedState initialState) {
             this.initialState = initialState;
+        }
+
+        public void reset(ClassifiedState initialState) {
+            this.initialState = initialState;
+            transitions.clear();
+            exploredStates.clear();
         }
 
         /**
