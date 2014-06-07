@@ -82,7 +82,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
             while (submitted < THREADS && !explorationQueue.isEmpty()) {
                 ClassifiedState state = explorationQueue.poll();
                 completionService.submit(
-                        new MultiStateExplorer(state, statesPerThread, explorerUtilities, vanishingExplorer));
+                        new MultiStateExplorer(state));
                 submitted++;
             }
 
@@ -147,21 +147,6 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         private final ClassifiedState initialState;
 
         /**
-         * Number of states the thread is allowed to explore before finishing execution
-         */
-        private final int exploreCount;
-
-        /**
-         * Utilities for exploring a state within a Petri net
-         */
-        private final ExplorerUtilities explorerUtilities;
-
-        /**
-         * Used to explore a vanishing state
-         */
-        private final VanishingExplorer vanishingExplorer;
-
-        /**
          * Transitions found whilst exploring exploreCount states
          */
         private final Map<ClassifiedState, Map<ClassifiedState, Double>> transitions = new HashMap<>();
@@ -171,12 +156,8 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          */
         private final Set<ClassifiedState> exploredStates = new HashSet<>();
 
-        private MultiStateExplorer(ClassifiedState initialState, int exploreCount, ExplorerUtilities explorerUtilities,
-                                   VanishingExplorer vanishingExplorer) {
+        private MultiStateExplorer(ClassifiedState initialState) {
             this.initialState = initialState;
-            this.exploreCount = exploreCount;
-            this.explorerUtilities = explorerUtilities;
-            this.vanishingExplorer = vanishingExplorer;
         }
 
         /**
@@ -191,7 +172,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         public Result call() throws TimelessTrapException, InvalidRateException {
             Queue<ClassifiedState> explorationQueue = new ArrayDeque<>();
             explorationQueue.add(initialState);
-            for (int explored = 0; explored < exploreCount && !explorationQueue.isEmpty(); explored++) {
+            for (int explored = 0; explored < statesPerThread && !explorationQueue.isEmpty(); explored++) {
                 ClassifiedState state = explorationQueue.poll();
                 Map<ClassifiedState, Double> successorRates = new HashMap<>();
                 for (ClassifiedState successor : explorerUtilities.getSuccessors(state)) {
