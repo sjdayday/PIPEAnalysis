@@ -8,6 +8,8 @@ import uk.ac.imperial.state.ClassifiedState;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Performs a parallel state space exploration using 8 threads.
@@ -38,6 +40,8 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      * Executor service used to submit tasks to
      */
     protected ExecutorService executorService;
+
+    private static final Logger LOGGER = Logger.getLogger(MassiveParallelStateSpaceExplorer.class.getName());
 
 
     /**
@@ -76,7 +80,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
             throws InterruptedException, ExecutionException, TimelessTrapException, IOException {
         executorService = Executors.newFixedThreadPool(THREADS);
         CompletionService<Result> completionService = new ExecutorCompletionService<>(executorService);
-
+                                            int iterations= 0;
         while (!explorationQueue.isEmpty() && explorerUtilities.canExploreMore(stateCount)) {
             int submitted = 0;
             while (submitted < THREADS && !explorationQueue.isEmpty()) {
@@ -109,9 +113,11 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
                 }
             }
             explorerUtilities.clear();
+            iterations++;
         }
 
         executorService.shutdownNow();
+        LOGGER.log(Level.INFO, String.format("Took %d iterations to explore state space", iterations));
     }
 
     /**

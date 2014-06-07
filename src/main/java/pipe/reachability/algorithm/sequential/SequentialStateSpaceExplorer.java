@@ -7,6 +7,8 @@ import uk.ac.imperial.state.ClassifiedState;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class performs state space exploration sequentially to determine the reachability of each state
@@ -15,6 +17,8 @@ import java.util.Collection;
  */
 public final class SequentialStateSpaceExplorer extends AbstractStateSpaceExplorer {
 
+
+    private static final Logger LOGGER = Logger.getLogger(SequentialStateSpaceExplorer.class.getName());
 
     /**
      * Constructor for generating a single thread state space explorer
@@ -37,6 +41,7 @@ public final class SequentialStateSpaceExplorer extends AbstractStateSpaceExplor
      */
     @Override
     protected void stateSpaceExploration() throws TimelessTrapException, IOException, InvalidRateException {
+        int iterations = 0;
         while (!explorationQueue.isEmpty() && explorerUtilities.canExploreMore(stateCount)) {
             ClassifiedState state = explorationQueue.poll();
             successorRates.clear();
@@ -53,6 +58,8 @@ public final class SequentialStateSpaceExplorer extends AbstractStateSpaceExplor
             }
             writeStateTransitions(state, successorRates);
             explorerUtilities.clear();
+            iterations++;
         }
+        LOGGER.log(Level.INFO, String.format("Took %d iterations to explore state space", iterations));
     }
 }
