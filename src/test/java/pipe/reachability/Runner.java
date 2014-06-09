@@ -29,12 +29,12 @@ public class Runner {
     public static void main(String[] args)
             throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
             IOException, InvalidRateException {
-        run("/medium_complex_102400.xml");
+        System.out.println("Hello World");
+//        run("/medium_complex_102400.xml");
 //        run("/medium_complex_286720.xml");
-        PetriNet petriNet = Utils.readPetriNet("/medium_complex_102400.xml");
-        processSequential(petriNet);
-        processParallel(petriNet, 100);
-
+//        PetriNet petriNet = Utils.readPetriNet("/pipe4_tests/4046.xml");
+//        processSequential(petriNet);
+//        processParallel(petriNet, 100);
 
     }
 
