@@ -60,17 +60,6 @@ public final class SteadyStateBuilderImpl implements SteadyStateBuilder
     /**
      *
      * @param executorService executor service for submitting tasks
-     * @param threads number of parallel tasks that can be submitted
-     * @return power solver
-     */
-    @Override
-    public SteadyStateSolver buildPower(ExecutorService executorService, int threads) {
-        return new PowerSolver(threads, executorService);
-    }
-
-    /**
-     *
-     * @param executorService executor service for submitting tasks
      * @param threads the number of worker threads to use
      * @param subIterations the number of sub iterations each worker will perform before testing for convergence
      * @return asynchronous Gauss-Seidel implementation

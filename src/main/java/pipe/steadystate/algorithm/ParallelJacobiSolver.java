@@ -1,8 +1,10 @@
 package pipe.steadystate.algorithm;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,14 +81,14 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
      * @return normalized x
      */
     @Override
-    protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
+    protected List<Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
         ParallelSubmitter submitter = getSubmitter();
-        Map<Integer, Double> x =
-                submitter.solve(threads, executorService, initialiseXWithGuess(records), records, diagonalElements,
+        List<Double> x =
+                submitter.solve(threads, executorService, initialiseXWithGuessList(records), records, diagonalElements,
                         new ParallelSubmitter.ParallelUtils() {
                             @Override
-                            public boolean isConverged(Map<Integer, Double> previousX, Map<Integer, Double> x,
+                            public boolean isConverged(List<Double> previousX, AtomicReferenceArray<Double> x,
                                                        Map<Integer, Map<Integer, Double>> records,
                                                        Map<Integer, Double> diagonalElements) {
                                 return hasConverged(records, diagonalElements, x);
@@ -94,14 +96,14 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
 
                             @Override
                             public Runnable createRunnable(int from, int to, CountDownLatch latch,
-                                                           Map<Integer, Double> previousX, Map<Integer, Double> x,
+                                                          List<Double> previousX, AtomicReferenceArray<Double> x,
                                                            Map<Integer, Map<Integer, Double>> records,
                                                            Map<Integer, Double> diagonalElements) {
                                 return new ParallelSolver(from, to, latch, previousX, records, x, diagonalElements);
                             }
                         });
 
-        return normalize(x);
+        return x;
     }
 
     /**
@@ -122,7 +124,7 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
         /**
          * Previous value of x
          */
-        private final Map<Integer, Double> previous;
+        private final List<Double> previous;
 
         /**
          * Sparse matrix A, missing the diagonal elements
@@ -132,7 +134,7 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
         /**
          * Current value of x
          */
-        private final Map<Integer, Double> x;
+        private final AtomicReferenceArray<Double> x;
 
         /**
          * Diagonal elements of A
@@ -164,8 +166,8 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
          * @param x
          * @param diagonalElements
          */
-        private ParallelSolver(int from, int to, CountDownLatch latch, Map<Integer, Double> previous,
-                               Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> x,
+        private ParallelSolver(int from, int to, CountDownLatch latch, List<Double> previous,
+                               Map<Integer, Map<Integer, Double>> records, AtomicReferenceArray<Double> x,
                                Map<Integer, Double> diagonalElements) {
             this.previous = previous;
             this.records = records;
@@ -187,7 +189,7 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
                     Map<Integer, Double> row = records.get(state);
                     double aii = diagonalElements.get(state);
                     double rowValue = getRowValue(state, row, aii, previous);
-                    x.put(state, rowValue);
+                    x.set(state, rowValue);
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, e.getMessage());

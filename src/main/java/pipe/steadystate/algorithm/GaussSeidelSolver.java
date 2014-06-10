@@ -1,5 +1,6 @@
 package pipe.steadystate.algorithm;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,13 +18,13 @@ public final class GaussSeidelSolver extends AXEqualsBSolver {
      *
      * @param records
      * @param diagonalElements
-     * @return
+     * @return unnormalized x
      */
     @Override
-    protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
+    protected List<Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
 
-        Map<Integer, Double> x = initialiseXWithGuess(records);
+        List<Double> x = initialiseXWithGuessList(records);
         boolean converged = false;
         int iterations = 0;
         while(!converged) {
@@ -31,14 +32,14 @@ public final class GaussSeidelSolver extends AXEqualsBSolver {
                 Integer state = entry.getKey();
                 double aii = diagonalElements.get(state);
                 double rowValue = getRowValue(state, entry.getValue(), aii, x);
-                x.put(state, rowValue);
+                x.set(stateToIndex.get(state), rowValue);
             }
             converged = hasConverged(records, diagonalElements, x);
             iterations++;
         }
 
         LOGGER.log(Level.INFO, String.format("Took %d iterations to converge", iterations));
-        return normalize(x);
+        return x;
     }
 
 

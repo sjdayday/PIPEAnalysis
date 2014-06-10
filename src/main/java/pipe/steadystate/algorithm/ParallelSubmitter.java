@@ -1,10 +1,11 @@
 package pipe.steadystate.algorithm;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,10 +59,10 @@ class ParallelSubmitter {
      * @param utils
      * @return unnormalized x.
      */
-    public Map<Integer, Double> solve(int threads, ExecutorService executorService, Map<Integer, Double> firstGuess, Map<Integer, Map<Integer, Double>> records,
+    public List<Double> solve(int threads, ExecutorService executorService, List<Double> firstGuess, Map<Integer, Map<Integer, Double>> records,
                     Map<Integer, Double> diagonalElements, ParallelUtils utils) {
-        Map<Integer, Double> x = new ConcurrentHashMap<>(firstGuess);
-        Map<Integer, Double> previous = new HashMap<>(x);
+        AtomicReferenceArray<Double> x = new AtomicReferenceArray<>(firstGuess.toArray(new Double[firstGuess.size()]));
+        List<Double> previous = new ArrayList<>(firstGuess);
         boolean converged = false;
         int iterations = 0;
         while (!converged && canContinue(iterations)) {
@@ -72,11 +73,24 @@ class ParallelSubmitter {
                 LOGGER.log(Level.ALL, e.getMessage());
             }
             converged = utils.isConverged(previous, x, records, diagonalElements);
-            previous = new HashMap<>(x);
+            previous = atomicToList(x);
             iterations++;
         }
         LOGGER.log(Level.INFO, String.format("Took %d iterations to converge", iterations));
-        return x;
+        List<Double> values = new ArrayList<>();
+        for (int i = 0; i < x.length(); i++){
+            values.add(x.get(i));
+        }
+        return atomicToList(x);
+    }
+
+    private List<Double> atomicToList(AtomicReferenceArray<Double> x) {
+        List<Double> result = new ArrayList<>();
+        for (int i = 0; i < x.length(); i++) {
+            result.add(x.get(i));
+        }
+        return result;
+
     }
 
     /**
@@ -108,12 +122,12 @@ class ParallelSubmitter {
      * @return
      */
     private CountDownLatch submitTasks(ParallelUtils utils, int threads, Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements,
-                                       ExecutorService executorService, Map<Integer, Double> x, Map<Integer, Double> previous
+                                       ExecutorService executorService, AtomicReferenceArray<Double> x, List<Double> previous
     ) {
 
-        int scheduledThreads = x.size() < threads ? x.size() : threads;
-        int split = x.size() / scheduledThreads;
-        int remaining = x.size() % scheduledThreads;
+        int scheduledThreads = x.length() < threads ? x.length() : threads;
+        int split = x.length() / scheduledThreads;
+        int remaining = x.length() % scheduledThreads;
 
         CountDownLatch latch = new CountDownLatch(scheduledThreads);
         //TODO: THis wont do the last one, so we want inclusive too?
@@ -138,7 +152,7 @@ class ParallelSubmitter {
      * to implement the methods in here.
      */
     public interface ParallelUtils {
-        boolean isConverged(Map<Integer, Double> previousX, Map<Integer, Double> x,
+        boolean isConverged(List<Double> previousX, AtomicReferenceArray<Double> x,
                             Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements);
 
         /**
@@ -153,7 +167,7 @@ class ParallelSubmitter {
          * @param diagonalElements
          * @return
          */
-        Runnable createRunnable(int from, int to, CountDownLatch latch, Map<Integer, Double> previousX, Map<Integer, Double> x, Map<Integer, Map<Integer, Double>> records,
+        Runnable createRunnable(int from, int to, CountDownLatch latch, List<Double> previousX, AtomicReferenceArray<Double> x, Map<Integer, Map<Integer, Double>> records,
                                 Map<Integer, Double> diagonalElements);
     }
 }

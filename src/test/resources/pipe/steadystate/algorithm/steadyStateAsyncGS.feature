@@ -172,7 +172,7 @@ Scenario: Parsing a small multi rate Petri net
          "P2" : { "Default" : 2 }, "P3" : { "Default" : 1 }
        }
     """
-    And its probability to be 0.0.005
+    And its probability to be 0.005
 
     #2
     And I expect another record for
@@ -190,7 +190,7 @@ Scenario: Parsing a small multi rate Petri net
          "P2" : { "Default" : 2 }, "P3" : { "Default" : 1 }
        }
     """
-    And its probability to be 0.1
+    And its probability to be 0.01
 
     #5
     And I expect another record for

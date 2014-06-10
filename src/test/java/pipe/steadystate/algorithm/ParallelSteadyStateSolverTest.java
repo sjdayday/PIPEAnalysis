@@ -27,14 +27,11 @@ public class ParallelSteadyStateSolverTest {
     SteadyStateSolver jacobiSolver;
     @Mock
     SteadyStateSolver gsSolver;
-    @Mock
-    SteadyStateSolver powerSolver;
 
     @Before
     public void setUp() {
         when(builder.buildGaussSeidel()).thenReturn(gsSolver);
         when(builder.buildJacobi(any(ExecutorService.class), anyInt())).thenReturn(jacobiSolver);
-        when(builder.buildPower(any(ExecutorService.class), anyInt())).thenReturn(powerSolver);
     }
 
 
@@ -64,7 +61,6 @@ public class ParallelSteadyStateSolverTest {
 
         verify(builder).buildJacobi(any(ExecutorService.class), eq(8));
         verify(builder, never()).buildGaussSeidel();
-        verify(builder, never()).buildPower(any(ExecutorService.class), anyInt());
         verify(jacobiSolver).solve(records);
     }
 

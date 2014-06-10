@@ -1,6 +1,8 @@
 package pipe.steadystate.algorithm;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,12 +18,13 @@ public final class GaussianEliminationSolver extends AXEqualsBSolver {
      * @return normalised steady state
      */
     @Override
-    protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
+    protected List<Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
         addDiagonalElements(records, diagonalElements);
         reduceToUpperTriangle(records);
         Map<Integer, Double> x = backSubstitute(records);
-        return normalize(x);
+//        return normalize(x.values());
+        return new ArrayList<>();
     }
 
     /**

@@ -2,8 +2,11 @@ package pipe.steadystate.algorithm;
 
 import uk.ac.imperial.state.Record;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +23,9 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * Class logger
      */
     private static final Logger LOGGER = Logger.getLogger(AXEqualsBSolver.class.getName());
+
+
+    protected Map<Integer, Integer> stateToIndex = new HashMap<>();
 
     /**
      * Solves for a CTMC by first transforming it into a DTMC via uniformization:
@@ -52,11 +58,37 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      */
     private Map<Integer,Double> timeAndSolve(Map<Integer, Map<Integer, Double>> QTranspose, Map<Integer, Double> diagonals) {
         long startTime = System.nanoTime();
-        Map<Integer, Double> results = solve(QTranspose, diagonals);
+        List<Double> results = solve(QTranspose, diagonals);
         long finishTime = System.nanoTime();
         long duration = finishTime - startTime;
+        Map<Integer, Double> x = normalize(results);
         LOGGER.log(Level.INFO, "Steady state solved in " + duration);
-        return results;
+        return x;
+    }
+
+
+    /**
+     * Normalises x by dividing every value in it by its total sum
+     * @param x
+     * @return normalised x
+     */
+    protected final Map<Integer, Double> normalize(List<Double> x) {
+        double sum = 0;
+        for (double value : x) {
+            sum += value;
+        }
+        Map<Integer, Double> normalized = new HashMap<>();
+        for (Map.Entry<Integer, Integer> entry : stateToIndex.entrySet()) {
+            Integer state = entry.getKey();
+            Integer index = entry.getValue();
+            if (sum == 0) {
+                normalized.put(state, x.get(index));
+            } else {
+                normalized.put(state, x.get(index)/sum);
+            }
+
+        }
+        return normalized;
     }
 
 
@@ -66,8 +98,47 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @param diagonalElements
      * @return solved steady state
      */
-    protected abstract Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
+    protected abstract List<Double> solve(Map<Integer, Map<Integer, Double>> records,
                                                   Map<Integer, Double> diagonalElements);
+
+
+    /**
+     * Performs row sums of successors and optionally ignores a self loop successor
+     *
+     * That is for the map we sum up each states rate multiplied by the guess for it at x
+     *
+     * @param row the current non-zero row values in A, note A should be 0 along the diagonal
+     * @param x current guess for x
+     * @return
+     */
+    protected final double multiplyAndSum(Map<Integer, Double> row, List<Double> x) {
+        double sum = 0;
+        for (Map.Entry<Integer, Double> entry : row.entrySet()) {
+            Integer state = entry.getKey();
+            Double rate = entry.getValue();
+            sum += rate * x.get(stateToIndex.get(state));
+        }
+        return sum;
+    }
+
+    /**
+     * Performs row sums of successors and optionally ignores a self loop successor
+     *
+     * That is for the map we sum up each states rate multiplied by the guess for it at x
+     *
+     * @param row the current non-zero row values in A, note A should be 0 along the diagonal
+     * @param x current guess for x
+     * @return
+     */
+    protected final double multiplyAndSum(Map<Integer, Double> row, AtomicReferenceArray<Double> x) {
+        double sum = 0;
+        for (Map.Entry<Integer, Double> entry : row.entrySet()) {
+            Integer state = entry.getKey();
+            Double rate = entry.getValue();
+            sum += rate * x.get(stateToIndex.get(state));
+        }
+        return sum;
+    }
 
     /**
      * Checks to see if gauss seidel has converged. That is if Ax < EPSILON
@@ -82,20 +153,63 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @param x
      * @return true if every value for x has converged
      */
-
-    //TODO: Ask will about the plausible check, could it not converge?
     protected final boolean hasConverged(Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonals,
-                                   Map<Integer, Double> x) {
+                                         List<Double> x) {
         for (Map.Entry<Integer, Map<Integer, Double>> entry : records.entrySet()) {
             int state = entry.getKey();
             double rowValue = multiplyAndSum(entry.getValue(), x);
             //Add the diagonal
-            rowValue += diagonals.get(state) * x.get(state);
+            rowValue += diagonals.get(state) * x.get(stateToIndex.get(state));
             if (rowValue >= EPSILON) {
                 return false;
             }
         }
         return isPlausible(x);
+    }
+
+
+    /**
+     * Checks to see if gauss seidel has converged. That is if Ax < EPSILON
+     * <p/>
+     * It does this on a row level, returning false early if one of the
+     * row sums is >= EPSILON
+     * <p/>
+     * If Ax < EPSILON we finally check that the answer is plausible. That is that every value in
+     * x >= 0
+     *
+     * @param records
+     * @param x
+     * @return true if every value for x has converged
+     */
+    protected final boolean hasConverged(Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonals,
+                                         AtomicReferenceArray<Double> x) {
+        for (Map.Entry<Integer, Map<Integer, Double>> entry : records.entrySet()) {
+            int state = entry.getKey();
+            double rowValue = multiplyAndSum(entry.getValue(), x);
+            //Add the diagonal
+            rowValue += diagonals.get(state) * x.get(stateToIndex.get(state));
+            if (rowValue >= EPSILON) {
+                return false;
+            }
+        }
+        return isPlausible(x);
+    }
+
+
+    /**
+     * Calculates if x is plausible for the steady state, that is every value of x
+     * must be >= 0
+     *
+     * @param x
+     * @return true if x is a plausible answer for the steady state
+     */
+    private boolean isPlausible(List<Double> x) {
+        for (double value : x) {
+            if (value < 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -105,14 +219,16 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @param x
      * @return true if x is a plausible answer for the steady state
      */
-    private boolean isPlausible(Map<Integer, Double> x) {
-        for (double value : x.values()) {
+    private boolean isPlausible(AtomicReferenceArray<Double> x) {
+        for (int i = 0; i < x.length(); i++) {
+            double value = x.get(i);
             if (value < 0) {
                 return false;
             }
         }
         return true;
     }
+
 
     /**
      * Performs a row calculation of the Gauss Seidel method
@@ -123,13 +239,50 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @param x     current x values
      * @return the value that should be entered in x for the state held by the record
      */
-    protected final double getRowValue(Integer state, Map<Integer, Double> row, double aii, Map<Integer, Double> x) {
+    protected final double getRowValue(Integer state, Map<Integer, Double> row, double aii, List<Double> x) {
         if (aii == 0) {
-            return x.get(state);
+            return x.get(stateToIndex.get(state));
         }
 
         double rowSum = multiplyAndSum(row, x);
         return -rowSum / aii;
     }
+    /**
+     * Performs a row calculation of the Gauss Seidel method
+     *
+     * @param state current row
+     * @param row   contains the non zero row values in A
+     * @param aii   the record's state's value on the diagonal of the A matrix
+     * @param x     current x values
+     * @return the value that should be entered in x for the state held by the record
+     */
+    protected final double getRowValue(Integer state, Map<Integer, Double> row, double aii, AtomicReferenceArray<Double> x) {
+        if (aii == 0) {
+            return x.get(stateToIndex.get(state));
+        }
+
+        double rowSum = multiplyAndSum(row, x);
+        return -rowSum / aii;
+    }
+
+
+    /**
+     *
+     * Initialises each value of x to a first guess of 1
+     *
+     * @param records
+     * @return initial guess for x
+     */
+    protected final List<Double> initialiseXWithGuessList(Map<Integer, Map<Integer, Double>> records) {
+        List<Double> x = new ArrayList<>();
+        int index = 0;
+        for (Integer state : records.keySet()) {
+            stateToIndex.put(index, state);
+            x.add(1.0);
+            index++;
+        }
+        return x;
+    }
+
 
 }

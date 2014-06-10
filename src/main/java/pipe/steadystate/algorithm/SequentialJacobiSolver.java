@@ -1,6 +1,7 @@
 package pipe.steadystate.algorithm;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,11 +47,11 @@ class SequentialJacobiSolver extends AXEqualsBSolver {
      * @return
      */
     @Override
-    protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
+    protected List<Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
 
-        Map<Integer, Double> x = initialiseXWithGuess(records);
-        Map<Integer, Double> previous = new HashMap<>(x);
+        List<Double> x = initialiseXWithGuessList(records);
+        List<Double> previous = new ArrayList<>(x);
         boolean converged = false;
         int iterations = 0;
         while(!converged && canContinue(iterations)) {
@@ -58,16 +59,16 @@ class SequentialJacobiSolver extends AXEqualsBSolver {
                 Integer state = entry.getKey();
                 double aii = diagonalElements.get(state);
                 double rowValue = getRowValue(state, entry.getValue(), aii, previous);
-                x.put(state, rowValue);
+                x.set(state, rowValue);
             }
             converged = hasConverged(records, diagonalElements, x);
             iterations++;
             previous.clear();
-            previous.putAll(x);
+            previous.addAll(x);
         }
 
         LOGGER.log(Level.INFO, String.format("Sequential Jacobi took %d iterations to converge", iterations));
-        return normalize(x);
+        return x;
     }
 
     /**
