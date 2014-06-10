@@ -25,6 +25,12 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      */
     private static final int EXPLORED_SET_SIZE = 300007;
 
+    /**
+     * Contains states that have already been explored.
+     * Initialised in generate when initialState info is given
+     */
+    protected final ExploredSet explored = new ExploredSet(EXPLORED_SET_SIZE);
+
     private static final Logger LOGGER = Logger.getLogger(AbstractSteadyStateSolver.class.getName());
 
     /**
@@ -60,12 +66,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     protected Deque<ClassifiedState> explorationQueue = new ArrayDeque<>();
 
     /**
-     * Contains states that have already been explored.
-     * Initialised in generate when initialState info is given
-     */
-    protected ExploredSet explored;
-
-    /**
      * This value is used to give a unique number to each state seen
      */
     protected int stateCount = 0;
@@ -97,7 +97,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     public final StateSpaceExplorerResults generate(ClassifiedState initialState)
             throws TimelessTrapException, InterruptedException, ExecutionException, IOException, InvalidRateException {
         long start = System.nanoTime();
-        initialiseExplored(initialState);
         exploreInitialState(initialState);
         stateSpaceExploration();
         long end = System.nanoTime();
@@ -107,16 +106,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     }
 
-    /**
-     * Initialises the explored set with the states place ordering and
-     * the explored set size
-     *
-     * @param state
-     */
-    private void initialiseExplored(State state) {
-        List<String> placeOrder = getPlaceNames(state);
-        explored = new ExploredSet(EXPLORED_SET_SIZE, placeOrder);
-    }
 
     /**
      * Populates tangibleQueue with all starting tangible states.
@@ -155,14 +144,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      */
     protected abstract void stateSpaceExploration()
             throws InterruptedException, ExecutionException, TimelessTrapException, IOException, InvalidRateException;
-
-    /**
-     * @param state
-     * @return List of place names contained in state
-     */
-    private List<String> getPlaceNames(State state) {
-        return new LinkedList<>(state.getPlaces());
-    }
 
     /**
      * Adds a compressed version of a tangible state to exploredStates
@@ -218,6 +199,14 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
         } else {
             successorRates.put(successor, rate);
         }
+    }
+
+    /**
+     * @param state
+     * @return List of place names contained in state
+     */
+    private List<String> getPlaceNames(State state) {
+        return new LinkedList<>(state.getPlaces());
     }
 
     /**
