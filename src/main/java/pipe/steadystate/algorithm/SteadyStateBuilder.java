@@ -58,7 +58,8 @@ public interface SteadyStateBuilder {
      *
      * @param executorService executor service for submitting tasks
      * @param threads number of parallel tasks that can be submitted
-     * @return Parallel Gauss-Seidel method solver using threads
+     * @param subIterations the number of sub iterations each worker will perform before testing for convergence
+     * @return asynchronous Gauss-Seidel method solver using threads
      */
-    SteadyStateSolver buildAsynchronousGaussSeidel(ExecutorService executorService, int threads);
+    SteadyStateSolver buildAsynchronousGaussSeidel(ExecutorService executorService, int threads, int subIterations);
 }

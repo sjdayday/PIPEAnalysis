@@ -80,7 +80,7 @@ public class SteadyStateStepDefinitions {
             } else {
                 executorService = Executors.newFixedThreadPool(THREADS);
                 if (method.equals("gauss-seidel")) {
-                    solver = builder.buildAsynchronousGaussSeidel(executorService, THREADS);
+                    solver = builder.buildAsynchronousGaussSeidel(executorService, THREADS, 5);
                 } else {
                     solver = builder.buildBoundedParallelJacobiSolver(executorService, THREADS, 100_000);
                 }

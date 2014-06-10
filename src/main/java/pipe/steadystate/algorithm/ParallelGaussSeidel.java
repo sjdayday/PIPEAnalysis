@@ -24,16 +24,23 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
      */
     private final ExecutorService executorService;
 
+    /**
+     * The number of sub iterations that each thread will do before testing for convergence results
+     */
+    private final int subIterations;
+
 
 
     /**
      * @param threads         Number of threads Jacobi should be solved with for each
      *                        iteration
      * @param executorService service to submit tasks to
+     * @param subIterations  number of sub iterations that each thread will do before testing for convergence results
      */
-    public ParallelGaussSeidel(int threads, ExecutorService executorService) {
+    public ParallelGaussSeidel(int threads, ExecutorService executorService, int subIterations) {
         this.threads = threads;
         this.executorService = executorService;
+        this.subIterations = subIterations;
     }
 
 
@@ -133,7 +140,7 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
          */
         @Override
         public void run() {
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < subIterations; i++) {
                 try {
                     for (int state = from; state <= to; state++) {
                         Map<Integer, Double> row = records.get(state);
