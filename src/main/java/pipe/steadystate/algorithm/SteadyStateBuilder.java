@@ -52,4 +52,13 @@ public interface SteadyStateBuilder {
      * @return Power method solver using threads
      */
     SteadyStateSolver buildPower(ExecutorService executorService, int threads);
+
+
+    /**
+     *
+     * @param executorService executor service for submitting tasks
+     * @param threads number of parallel tasks that can be submitted
+     * @return Parallel Gauss-Seidel method solver using threads
+     */
+    SteadyStateSolver buildAsynchronousGaussSeidel(ExecutorService executorService, int threads);
 }

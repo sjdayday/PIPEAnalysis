@@ -61,4 +61,9 @@ public final class SteadyStateBuilderImpl implements SteadyStateBuilder
     public SteadyStateSolver buildPower(ExecutorService executorService, int threads) {
         return new PowerSolver(threads, executorService);
     }
+
+    @Override
+    public SteadyStateSolver buildAsynchronousGaussSeidel(ExecutorService executorService, int threads) {
+        return new ParallelGaussSeidel(threads, executorService);
+    }
 }
