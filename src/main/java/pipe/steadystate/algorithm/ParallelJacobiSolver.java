@@ -30,6 +30,19 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
      */
     private final ExecutorService executorService;
 
+
+    /**
+     * If bounded = true this is the maximum number of iterations the solver is allowed
+     */
+    private final int maxIterations;
+
+    /**
+     * If this value is true then a maximum number of iterations is imposed on the solver
+     */
+    private boolean bounded = false;
+
+
+
     /**
      * @param threads         Number of threads Jacobi should be solved with for each
      *                        iteration
@@ -38,7 +51,22 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
     public ParallelJacobiSolver(int threads, ExecutorService executorService) {
         this.threads = threads;
         this.executorService = executorService;
+        maxIterations = 0;
     }
+
+    /**
+     * @param threads         Number of threads Jacobi should be solved with for each
+     *                        iteration
+     * @param executorService service to submit tasks to
+     * @param maxIterations maximum number of iterations allowed
+     */
+    public ParallelJacobiSolver(int threads, ExecutorService executorService, int maxIterations) {
+        this.threads = threads;
+        this.executorService = executorService;
+        this.maxIterations = maxIterations;
+        bounded = true;
+    }
+
 
     /**
      * Solves the matrix via a parallel jacobi. The submitted tasks of each iteration each perform the new
@@ -53,7 +81,7 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
     @Override
     protected Map<Integer, Double> solve(Map<Integer, Map<Integer, Double>> records,
                                          Map<Integer, Double> diagonalElements) {
-        ParallelSubmitter submitter = new ParallelSubmitter();
+        ParallelSubmitter submitter = getSubmitter();
         Map<Integer, Double> x =
                 submitter.solve(threads, executorService, initialiseXWithGuess(records), records, diagonalElements,
                         new ParallelSubmitter.ParallelUtils() {
@@ -74,6 +102,17 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
                         });
 
         return normalize(x);
+    }
+
+    /**
+     *
+     * @return a submitter that is possibly bounded
+     */
+    private ParallelSubmitter getSubmitter() {
+        if (!bounded) {
+            return new ParallelSubmitter();
+        }
+        return new ParallelSubmitter(maxIterations);
     }
 
     /**

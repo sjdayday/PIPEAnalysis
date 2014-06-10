@@ -1,5 +1,6 @@
 package pipe.reachability.algorithm;
 
+import pipe.steadystate.algorithm.AbstractSteadyStateSolver;
 import uk.ac.imperial.io.StateProcessor;
 import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
@@ -9,6 +10,8 @@ import uk.ac.imperial.utils.ExploredSet;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Abstract state space explorer that contains useful methods for exploring the state space.
@@ -21,6 +24,8 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      * and saturation avoidance
      */
     private static final int EXPLORED_SET_SIZE = 300007;
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractSteadyStateSolver.class.getName());
 
     /**
      * Used for processing transitions
@@ -91,9 +96,13 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     @Override
     public final StateSpaceExplorerResults generate(ClassifiedState initialState)
             throws TimelessTrapException, InterruptedException, ExecutionException, IOException, InvalidRateException {
+        long start = System.nanoTime();
         initialiseExplored(initialState);
         exploreInitialState(initialState);
         stateSpaceExploration();
+        long end = System.nanoTime();
+        long duration = end - start;
+        LOGGER.log(Level.INFO, "Took " + duration + " to solve state space");
         return new StateSpaceExplorerResults(processedCount, stateCount);
 
     }

@@ -4,6 +4,8 @@ import uk.ac.imperial.state.Record;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Solves AX = 0 steady states by converting a CTMC matrix A into
@@ -14,6 +16,10 @@ import java.util.Map;
  * w
  */
 public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = Logger.getLogger(AXEqualsBSolver.class.getName());
 
     /**
      * Solves for a CTMC by first transforming it into a DTMC via uniformization:
@@ -32,7 +38,25 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         List<Record> Q = divide(A, -a);
         Map<Integer, Double> newDiagonals = divide(-a, diagonals);
         Map<Integer, Map<Integer, Double>> QTranspose = transpose(Q);
-        return solve(QTranspose, newDiagonals);
+
+        return timeAndSolve(QTranspose, newDiagonals);
+    }
+
+    /**
+     *
+     * Solves the steady state and logs timing results
+     *
+     * @param QTranspose
+     * @param diagonals
+     * @return the solved equation
+     */
+    private Map<Integer,Double> timeAndSolve(Map<Integer, Map<Integer, Double>> QTranspose, Map<Integer, Double> diagonals) {
+        long startTime = System.nanoTime();
+        Map<Integer, Double> results = solve(QTranspose, diagonals);
+        long finishTime = System.nanoTime();
+        long duration = finishTime - startTime;
+        LOGGER.log(Level.INFO, "Steady state solved in " + duration);
+        return results;
     }
 
 
