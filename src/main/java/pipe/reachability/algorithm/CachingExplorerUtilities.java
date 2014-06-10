@@ -3,10 +3,10 @@ package pipe.reachability.algorithm;
 import uk.ac.imperial.pipe.animation.AnimationLogic;
 import uk.ac.imperial.pipe.animation.PetriNetAnimationLogic;
 import uk.ac.imperial.pipe.exceptions.InvalidRateException;
+import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.models.petrinet.Place;
 import uk.ac.imperial.pipe.models.petrinet.Token;
 import uk.ac.imperial.pipe.models.petrinet.Transition;
-import uk.ac.imperial.pipe.models.petrinet.PetriNet;
 import uk.ac.imperial.pipe.parsers.FunctionalResults;
 import uk.ac.imperial.pipe.parsers.PetriNetWeightParser;
 import uk.ac.imperial.pipe.parsers.StateEvalVisitor;
@@ -69,15 +69,10 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      */
     @Override
     public final Map<ClassifiedState, Collection<Transition>> getSuccessorsWithTransitions(ClassifiedState state) {
-        try {
-            if (cachedSuccessors.containsKey(state)) {
-                return cachedSuccessors.get(state);
-            }
-        } catch (Exception e) {
-            System.out.print("STATE " + state);
-            System.out.println(e.toString());
-            int debug = 2;
+        if (cachedSuccessors.containsKey(state)) {
+            return cachedSuccessors.get(state);
         }
+
 
         Map<State, Collection<Transition>> successors = animationLogic.getSuccessors(state);
         Map<ClassifiedState, Collection<Transition>> classifiedSuccessors = new HashMap<>();
@@ -93,7 +88,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     /**
-     *
      * @param state state in the Petri net to find successors of
      * @return the successors of this state
      */
@@ -103,7 +97,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     /**
-     *
      * @param state
      * @param successor
      * @return the rate at which the state transitions to the successor in the underlying Petri net
@@ -210,7 +203,9 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
             if (!results.hasErrors()) {
                 weight += results.getResult();
             } else {
-                throw new InvalidRateException("Invalid functional expression observed for transition : " + transition.getId() + " "+ transition.getRateExpr());
+                throw new InvalidRateException(
+                        "Invalid functional expression observed for transition : " + transition.getId() + " "
+                                + transition.getRateExpr());
             }
         }
         return weight;
