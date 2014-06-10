@@ -22,12 +22,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 
 public class SteadyStateStepDefinitions {
 
     private PetriNet petriNet;
+
+    /**
+     * Number of threads to run parallel solvers with
+     */
+    private static final int THREADS = 4;
 
     private boolean timelessTrap;
 
@@ -44,13 +51,14 @@ public class SteadyStateStepDefinitions {
 
     private Map<ClassifiedState, Integer> stateMappings = new HashMap<>();
 
+
     @Given("^I use the Petri net located at (/[\\w/]+.xml)$")
     public void I_Use_the_Petri_net_located_at(String path) throws JAXBException, UnparsableException {
         petriNet = Utils.readPetriNet(path);
     }
 
-    @When("^I calculate the steady state using (a|an) (sequential|parallel jacobi|parallel power) solver")
-    public void I_calculate_the_steady_state(String a, String method)
+    @When("^I calculate the steady state using (a|an) (sequential|parallel) (jacobi|gauss-seidel|parallel power) solver")
+    public void I_calculate_the_steady_state(String a, String type, String method)
             throws InterruptedException, ExecutionException, IOException, InvalidRateException {
         try {
             TangibleOnlyUtils utils = new TangibleOnlyUtils();
@@ -60,14 +68,27 @@ public class SteadyStateStepDefinitions {
                 stateMappings.put(entry.getValue(), entry.getKey());
             }
 
+            ExecutorService executorService = null;
+            SteadyStateBuilder builder = new SteadyStateBuilderImpl();
             SteadyStateSolver solver;
-            if (method.equals("sequential")) {
-                solver = new GaussSeidelSolver();
+            if (type.equals("sequential")) {
+                if (method.equals("gauss-seidel")) {
+                    solver = builder.buildGaussSeidel();
+                } else {
+                    solver = builder.buildBoundedSequentialJacobi(100_000);
+                }
             } else {
-                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
-                solver = new ParallelSteadyStateSolver(8, builder);
+                executorService = Executors.newFixedThreadPool(THREADS);
+                if (method.equals("gauss-seidel")) {
+                    solver = builder.buildAsynchronousGaussSeidel(executorService, THREADS);
+                } else {
+                    solver = builder.buildBoundedParallelJacobiSolver(executorService, THREADS, 100_000);
+                }
             }
             probabilities.putAll(solver.solve(records));
+            if (executorService != null) {
+                executorService.shutdownNow();
+            }
         } catch (TimelessTrapException e) {
             timelessTrap = true;
         }
