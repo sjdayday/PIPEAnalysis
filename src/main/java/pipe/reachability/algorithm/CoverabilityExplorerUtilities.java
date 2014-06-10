@@ -162,8 +162,36 @@ public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
      */
     private void registerParent(ClassifiedState state, Collection<ClassifiedState> successors) {
         for (ClassifiedState successor : successors) {
-            parents.put(successor, state);
+            if (!isBackArc(successor, state)) {
+                parents.put(successor, state);
+            }
         }
+    }
+
+    /**
+     *
+     * @param successor
+     * @param state
+     * @return true if this is a back arc from a successor to a parent state
+     */
+    private boolean isBackArc(ClassifiedState successor, ClassifiedState state) {
+        Queue<ClassifiedState> ancestors = new ArrayDeque<>();
+        Set<ClassifiedState> exploredAncestors = new HashSet<>();
+
+        ancestors.add(state);
+        while (!ancestors.isEmpty()) {
+            ClassifiedState ancestor = ancestors.poll();
+            if (ancestor.equals(successor)) {
+                return true;
+            }
+            exploredAncestors.add(ancestor);
+            for (ClassifiedState p : parents.get(ancestor)) {
+                if (!exploredAncestors.contains(p)) {
+                    ancestors.add(p);
+                }
+            }
+        }
+        return false;
     }
 
     /**
