@@ -88,10 +88,10 @@ class ParallelSubmitter {
      * @return true if the solver is allowed to continue for another iteration
      */
     private boolean canContinue(int iterations) {
-        if (bounded && iterations > maxIterations) {
+        if (bounded && iterations >= maxIterations) {
             LOGGER.log(Level.INFO, "Reached maximum number of iterations. Cutting short!");
         }
-        return !bounded || iterations <= maxIterations;
+        return !bounded || iterations < maxIterations;
     }
 
     /**

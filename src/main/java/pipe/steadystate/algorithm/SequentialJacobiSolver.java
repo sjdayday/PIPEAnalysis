@@ -79,11 +79,11 @@ class SequentialJacobiSolver extends AXEqualsBSolver {
      * @return true if the next iteration is allowed to continue
      */
     private boolean canContinue(int iterations) {
-        if (bounded && iterations > maxIterations) {
+        if (bounded && iterations >= maxIterations) {
             LOGGER.log(Level.INFO, "Reached maximum number of iterations. Cutting short!");
         }
 
-        return !bounded || iterations <= maxIterations;
+        return !bounded || iterations < maxIterations;
     }
 
 }
