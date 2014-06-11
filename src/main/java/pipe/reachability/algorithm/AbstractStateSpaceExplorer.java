@@ -31,6 +31,9 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      */
     protected final ExploredSet explored = new ExploredSet(EXPLORED_SET_SIZE);
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = Logger.getLogger(AbstractSteadyStateSolver.class.getName());
 
     /**
@@ -152,8 +155,8 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      * @param state state that has been explored
      */
     protected final void markAsExplored(ClassifiedState state) {
-        int uniqueNumber = getUniqueStateNumber();
         if (!explored.contains(state)) {
+            int uniqueNumber = getUniqueStateNumber();
             stateProcessor.processState(state, uniqueNumber);
             explored.add(state, uniqueNumber);
         }
