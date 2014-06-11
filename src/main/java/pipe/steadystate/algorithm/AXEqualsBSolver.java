@@ -34,7 +34,11 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * <p/>
      * We then solve for a DTMC pQ = p
      *
-     * @param A
+     * NOTE: States must be labelled in increasing row order from 0->N in +1 increments for this method to work
+     *       That is all records and their transitions must have been labelled in +1 increments from 0
+     *
+     *
+     * @param A matrix A.
      * @return
      */
     @Override
@@ -116,7 +120,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         for (Map.Entry<Integer, Double> entry : row.entrySet()) {
             Integer state = entry.getKey();
             Double rate = entry.getValue();
-            sum += rate * x.get(stateToIndex.get(state));
+            sum += rate * x.get(state);
         }
         return sum;
     }
@@ -135,7 +139,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         for (Map.Entry<Integer, Double> entry : row.entrySet()) {
             Integer state = entry.getKey();
             Double rate = entry.getValue();
-            sum += rate * x.get(stateToIndex.get(state));
+            sum += rate * x.get(state);
         }
         return sum;
     }
@@ -159,7 +163,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
             int state = entry.getKey();
             double rowValue = multiplyAndSum(entry.getValue(), x);
             //Add the diagonal
-            rowValue += diagonals.get(state) * x.get(stateToIndex.get(state));
+            rowValue += diagonals.get(state) * x.get(state);
             if (rowValue >= EPSILON) {
                 return false;
             }
@@ -187,7 +191,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
             int state = entry.getKey();
             double rowValue = multiplyAndSum(entry.getValue(), x);
             //Add the diagonal
-            rowValue += diagonals.get(state) * x.get(stateToIndex.get(state));
+            rowValue += diagonals.get(state) * x.get(state);
             if (rowValue >= EPSILON) {
                 return false;
             }
@@ -241,7 +245,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      */
     protected final double getRowValue(Integer state, Map<Integer, Double> row, double aii, List<Double> x) {
         if (aii == 0) {
-            return x.get(stateToIndex.get(state));
+            return x.get(state);
         }
 
         double rowSum = multiplyAndSum(row, x);
@@ -258,7 +262,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      */
     protected final double getRowValue(Integer state, Map<Integer, Double> row, double aii, AtomicReferenceArray<Double> x) {
         if (aii == 0) {
-            return x.get(stateToIndex.get(state));
+            return x.get(state);
         }
 
         double rowSum = multiplyAndSum(row, x);

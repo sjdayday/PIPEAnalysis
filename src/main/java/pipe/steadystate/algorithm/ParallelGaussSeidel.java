@@ -9,6 +9,12 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Solves Ax = b in a parallel asynchronous fashion
+ *
+ * NOTE: States must be labelled in increasing row order from 0->N in +1 increments for this method to work
+ *       That is all records and their transitions must have been labelled in +1 increments from 0
+ */
 public class ParallelGaussSeidel extends AXEqualsBSolver {
 
     /**
@@ -116,6 +122,16 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
         return latch;
     }
 
+    /**
+     * Creates the worker thread
+     * @param from
+     * @param to
+     * @param latch
+     * @param x
+     * @param records
+     * @param diagonalElements
+     * @return initialised worker thread
+     */
     public Runnable createRunnable(int from, int to, CountDownLatch latch, AtomicReferenceArray<Double> x, Map<Integer, Map<Integer, Double>> records,
                                    Map<Integer, Double> diagonalElements) {
         return new ParallelSolver(from, to, latch, records, x, diagonalElements);
