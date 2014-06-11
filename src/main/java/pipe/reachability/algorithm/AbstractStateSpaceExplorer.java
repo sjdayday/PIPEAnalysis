@@ -23,7 +23,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      * Prime number for the explored set size, trade off between wasted memory
      * and saturation avoidance
      */
-    private static final int EXPLORED_SET_SIZE = 300007;
+    private static final int EXPLORED_SET_SIZE = 358591;
 
     /**
      * Contains states that have already been explored.
