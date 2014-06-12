@@ -28,7 +28,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
     /**
      * The number of threads that this class will use to explore the state space
      */
-    private static final int THREADS = 8;
+    private final int threads;
 
     /**
      * Class logger
@@ -60,10 +60,11 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      *                          before returning to join the results together
      */
     public MassiveParallelStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
-                                             StateProcessor stateProcessor, int statesPerThread) {
+                                             StateProcessor stateProcessor, int threads, int statesPerThread) {
         super(explorerUtilities, vanishingExplorer, stateProcessor);
 
         this.statesPerThread = statesPerThread;
+        this.threads=threads;
     }
 
     /**
@@ -85,7 +86,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
     @Override
     protected void stateSpaceExploration()
             throws InterruptedException, ExecutionException, TimelessTrapException, IOException {
-        executorService = Executors.newFixedThreadPool(THREADS);
+        executorService = Executors.newFixedThreadPool(threads);
         CompletionService<Collection<Void>> completionService = new ExecutorCompletionService<>(executorService);
         int iterations = 0;
         List<MultiStateExplorer> explorers = initialiseExplorers();
@@ -93,7 +94,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         while (!sharedIterationQueue.isEmpty() && explorerUtilities.canExploreMore(stateCount)) {
             int submitted = 0;
             int statesToExplore = sharedIterationQueue.size();
-            while (submitted < THREADS && submitted < statesToExplore && !sharedIterationQueue.isEmpty()) {
+            while (submitted < threads && submitted < statesToExplore && !sharedIterationQueue.isEmpty()) {
                 MultiStateExplorer explorer = explorers.get(submitted);
                 completionService.submit(explorer);
                 submitted++;
@@ -121,7 +122,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
 
     private List<MultiStateExplorer> initialiseExplorers() {
         List<MultiStateExplorer> explorers = new ArrayList<>();
-        for (int i =0; i < THREADS; i++) {
+        for (int i = 0; i < threads; i++) {
             explorers.add(new MultiStateExplorer());
         }
         return explorers;
