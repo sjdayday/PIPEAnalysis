@@ -70,7 +70,7 @@ public class MetricsStepDefinitions {
         Map<String, Map<String, Double>> averageTokens =
                 TokenMetrics.averageTokensOnPlace(stateMappings, probabilities);
         Map<String, Map<String, Double>> expectedTokens = jsonToMap(jsonValue);
-        assertEquality(expectedTokens, averageTokens);
+        assertEqualityDoubleMap(expectedTokens, averageTokens);
 
     }
 
@@ -78,24 +78,40 @@ public class MetricsStepDefinitions {
      * @return
      * @throws IOException
      */
-    private Map<String, Map<String, Double>> jsonToMap(String jsonObject) throws IOException {
+    private <T> T jsonToMap(String jsonObject) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(jsonObject, new TypeReference<HashMap<String, HashMap<String, Double>>>() {
+        return mapper.readValue(jsonObject, new TypeReference<T>() {
         });
     }
 
-    private void assertEquality(Map<String, Map<String, Double>> expected, Map<String, Map<String, Double>> actual) {
+    private void assertEqualityDoubleMap(Map<String, Map<String, Double>> expected,
+                                         Map<String, Map<String, Double>> actual) {
         assertEquals("Place keys are not equal", expected.keySet(), actual.keySet());
         for (Map.Entry<String, Map<String, Double>> entry : expected.entrySet()) {
             Map<String, Double> actualMap = actual.get(entry.getKey());
             Map<String, Double> expectedMap = entry.getValue();
+            assertEquality(expectedMap, actualMap);
 
-            assertEquals("Token keys are not equal", expectedMap.keySet(), actualMap.keySet());
-            for (Map.Entry<String, Double> entry2 : expectedMap.entrySet()) {
-                assertEquals("Rates for " + entry2.getKey() + " on place " + entry.getKey() + " are not equal ",
-                        entry2.getValue(), actualMap.get(entry2.getKey()), 0.0001);
-            }
         }
     }
+
+    private void assertEquality(Map<String, Double> expected, Map<String, Double> actual) {
+        assertEquals("Token keys are not equal", expected.keySet(), actual.keySet());
+        for (Map.Entry<String, Double> entry : expected.entrySet()) {
+
+            assertEquals("Values for " + entry.getKey() + " are not equal ", entry.getValue(),
+                    actual.get(entry.getKey()), 0.0001);
+
+        }
+    }
+
+    @Then("^I expect the transition throughputs to be")
+    public void I_expect_the_transition_throughputs_to_be(String jsonValue) throws IOException {
+        Map<String, Double> actual = TransitionMetrics.getTransitionThroughput(stateMappings, probabilities, petriNet);
+        Map<String, Double> expected = jsonToMap(jsonValue);
+        assertEquality(expected, actual);
+
+    }
+
 
 }
