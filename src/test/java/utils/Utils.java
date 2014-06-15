@@ -29,9 +29,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Utility class used to help out step definitions for analysis testsing
+ * Utility class used to help out step definitions for analysis testing
  */
 public class Utils {
+    private static final int THREADS = 4;
+
     private Utils() {
     }
 
@@ -81,7 +83,7 @@ public class Utils {
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
                 StateSpaceExplorer stateSpaceExplorer =
-                        new MassiveParallelStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor, 5);
+                        new MassiveParallelStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor, THREADS, 5);
                 processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState()).processedTransitions;
             }
             try (ByteArrayInputStream transitionInputStream = new ByteArrayInputStream(transitionByteStream.toByteArray());
