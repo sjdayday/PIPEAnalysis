@@ -25,11 +25,11 @@ import java.util.concurrent.ExecutionException;
 public class Runner {
 
     private static final int ONE_MILLION = 1_000_000;
+    private static final int THREADS = 4;
 
     public static void main(String[] args)
             throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
             IOException, InvalidRateException {
-        System.out.println("Hello World");
 //        run("/medium_complex_102400.xml");
 //        run("/medium_complex_286720.xml");
 //        PetriNet petriNet = Utils.readPetriNet("/pipe4_tests/4046.xml");
@@ -132,7 +132,7 @@ public class Runner {
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
                 MassiveParallelStateSpaceExplorer stateSpaceExplorer =
-                        new MassiveParallelStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor, statesPerThread);
+                        new MassiveParallelStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor, THREADS, statesPerThread);
 
                 explore(stateSpaceExplorer, explorerUtilities, " Parallel " + statesPerThread);
 
