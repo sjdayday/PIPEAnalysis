@@ -29,7 +29,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      * Petri net to explore
      */
     private final PetriNet petriNet;
-
     /**
      * Animator for the Petri net
      */

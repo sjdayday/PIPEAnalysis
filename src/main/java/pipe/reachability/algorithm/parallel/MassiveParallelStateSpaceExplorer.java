@@ -89,6 +89,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         executorService = Executors.newFixedThreadPool(threads);
         CompletionService<Collection<Void>> completionService = new ExecutorCompletionService<>(executorService);
         int iterations = 0;
+        long duration = 0;
         List<MultiStateExplorer> explorers = initialiseExplorers();
         sharedIterationQueue.addAll(explorationQueue);
         while (!sharedIterationQueue.isEmpty() && explorerUtilities.canExploreMore(stateCount)) {
@@ -99,9 +100,12 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
                 submitted++;
             }
 
+            long start = System.nanoTime();
             for (int i = 0; i < submitted; i++) {
                 completionService.take().get();
             }
+            long end = System.nanoTime();
+            duration += end - start;
 
             markAsExplored(sharedHashSeen.keySet());
 
@@ -116,7 +120,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         }
 
         executorService.shutdownNow();
-        LOGGER.log(Level.INFO, String.format("Took %d iterations to explore state space", iterations));
+        LOGGER.log(Level.INFO, "Took " + iterations + " iterations to explore state space with " + duration/(double)iterations + " time for each iteration");
     }
 
     private List<MultiStateExplorer> initialiseExplorers() {

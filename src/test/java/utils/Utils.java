@@ -23,6 +23,7 @@ import uk.ac.imperial.state.Record;
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class Utils {
     private Utils() {
     }
 
-    public static PetriNet readPetriNet(String path) throws JAXBException, UnparsableException {
+    public static PetriNet readPetriNet(String path) throws JAXBException, FileNotFoundException {
         PetriNetReader io = new PetriNetIOImpl();
         return io.read(fileLocation(path));
     }

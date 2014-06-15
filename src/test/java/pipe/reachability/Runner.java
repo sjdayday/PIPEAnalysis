@@ -26,59 +26,14 @@ public class Runner {
 
     private static final int ONE_MILLION = 1_000_000;
     private static final int THREADS = 4;
-
     public static void main(String[] args)
-            throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
+            throws JAXBException, InterruptedException, ExecutionException, TimelessTrapException,
             IOException, InvalidRateException {
 //        run("/medium_complex_102400.xml");
 //        run("/medium_complex_286720.xml");
-//        PetriNet petriNet = Utils.readPetriNet("/pipe4_tests/4046.xml");
+        PetriNet petriNet = Utils.readPetriNet("/261997.xml");
 //        processSequential(petriNet);
-//        processParallel(petriNet, 100);
-
-    }
-
-    private static void foo()
-            throws UnparsableException, InterruptedException, ExecutionException, TimelessTrapException, JAXBException,
-            IOException, InvalidRateException {
-        dataStructureExperiment("/medium_complex_5832.xml");
-        System.out.println("~~~~~~~~~~~~~~~~");
-        dataStructureExperiment("/medium_complex_28672.xml");
-        System.out.println("~~~~~~~~~~~~~~~~");
-        dataStructureExperiment("/medium_complex_102400.xml");
-        System.out.println("~~~~~~~~~~~~~~~~");
-        dataStructureExperiment("/medium_complex_286720.xml");
-        System.out.println("~~~~~~~~~~~~~~~~");
-    }
-
-    private static void dataStructureExperiment(String s)
-            throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
-            IOException, InvalidRateException {
-        System.out.println("Starting three runs of " + s);
-        PetriNet petriNet = Utils.readPetriNet(s);
-        for (int i = 0; i < 3; i++) {
-            processSequential(petriNet);
-        }
-    }
-
-    private static void run(String s)
-            throws JAXBException, UnparsableException, InterruptedException, ExecutionException, TimelessTrapException,
-            IOException, InvalidRateException {
-        System.out.println("Results for " + s);
-        System.out.println("================================");
-        PetriNet petriNet = Utils.readPetriNet(s);
-        processParallel(petriNet, 1000);
-        System.gc();
-        System.out.println("************************");
-        processParallel(petriNet, 500);
-        System.gc();
-        System.out.println("************************");
         processParallel(petriNet, 100);
-        System.gc();
-        System.out.println("************************");
-        processSequential(petriNet);
-        System.gc();
-        System.out.println("************************");
     }
 
     private static void processSequential(PetriNet petriNet)

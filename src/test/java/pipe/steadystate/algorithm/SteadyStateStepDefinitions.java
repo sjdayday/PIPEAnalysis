@@ -16,6 +16,7 @@ import uk.ac.imperial.utils.StateUtils;
 import utils.Utils;
 
 import javax.xml.bind.JAXBException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +54,7 @@ public class SteadyStateStepDefinitions {
 
 
     @Given("^I use the Petri net located at (/[\\w/]+.xml)$")
-    public void I_Use_the_Petri_net_located_at(String path) throws JAXBException, UnparsableException {
+    public void I_Use_the_Petri_net_located_at(String path) throws JAXBException, UnparsableException, FileNotFoundException {
         petriNet = Utils.readPetriNet(path);
     }
 

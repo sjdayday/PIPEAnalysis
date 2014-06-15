@@ -19,6 +19,7 @@ import uk.ac.imperial.state.Record;
 import utils.Utils;
 
 import javax.xml.bind.JAXBException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public class MetricsStepDefinitions {
 
 
     @Given("^I use the Petri net located at (/[\\w/]+.xml)$")
-    public void I_Use_the_Petri_net_located_at(String path) throws JAXBException, UnparsableException {
+    public void I_Use_the_Petri_net_located_at(String path) throws JAXBException, UnparsableException, FileNotFoundException {
         petriNet = Utils.readPetriNet(path);
     }
 
@@ -105,7 +106,8 @@ public class MetricsStepDefinitions {
         }
     }
 
-    @Then("^I expect the transition throughputs to be")
+    @Then("^I expect the transition through" +
+            "puts to be")
     public void I_expect_the_transition_throughputs_to_be(String jsonValue) throws IOException {
         Map<String, Double> actual = TransitionMetrics.getTransitionThroughput(stateMappings, probabilities, petriNet);
         Map<String, Double> expected = jsonToMap(jsonValue);
