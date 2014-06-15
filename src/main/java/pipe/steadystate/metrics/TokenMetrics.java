@@ -9,7 +9,7 @@ import java.util.Map;
  * Metrics utility class calculates useful metrics about tokens
  * once the steady state at equilibrium of a Petri net has been solved
  */
-public class TokenMetrics {
+public final class TokenMetrics {
 
     /**
      * Private utility constructor

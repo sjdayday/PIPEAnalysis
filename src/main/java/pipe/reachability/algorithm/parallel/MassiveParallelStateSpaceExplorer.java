@@ -45,9 +45,9 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      */
     protected ExecutorService executorService;
 
-    Queue<ClassifiedState> sharedIterationQueue = new ConcurrentLinkedQueue<>();
-    Map<ClassifiedState, Map<ClassifiedState, Double>> iterationTransitions = new ConcurrentHashMap<>();
-    Map<ClassifiedState, Boolean> sharedHashSeen = new ConcurrentHashMap<>();
+    private Queue<ClassifiedState> sharedIterationQueue = new ConcurrentLinkedQueue<>();
+    private Map<ClassifiedState, Map<ClassifiedState, Double>> iterationTransitions = new ConcurrentHashMap<>();
+    private Map<ClassifiedState, Boolean> sharedHashSeen = new ConcurrentHashMap<>();
 
 
     /**

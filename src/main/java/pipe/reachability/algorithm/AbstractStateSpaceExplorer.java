@@ -4,7 +4,6 @@ import pipe.steadystate.algorithm.AbstractSteadyStateSolver;
 import uk.ac.imperial.io.StateProcessor;
 import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.state.ClassifiedState;
-import uk.ac.imperial.state.State;
 import uk.ac.imperial.utils.ExploredSet;
 
 import java.io.IOException;
@@ -202,14 +201,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
         } else {
             successorRates.put(successor, rate);
         }
-    }
-
-    /**
-     * @param state
-     * @return List of place names contained in state
-     */
-    private List<String> getPlaceNames(State state) {
-        return new LinkedList<>(state.getPlaces());
     }
 
     /**

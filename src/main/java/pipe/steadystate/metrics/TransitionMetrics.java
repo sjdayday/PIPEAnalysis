@@ -13,7 +13,7 @@ import java.util.Map;
  * Metrics utility class calculates useful metrics about transitions
  * once the steady state at equilibrium of a Petri net has been solved
  */
-public class TransitionMetrics {
+public final class TransitionMetrics {
 
     /**
      * Private constructor of utility class
