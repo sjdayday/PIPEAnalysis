@@ -25,6 +25,7 @@ To use this library in Maven projects add this GitHub project as an external rep
         </snapshots>
     </repository>
 </repositories>
+```
 
 Then either include the SNAPSHOT or latest release version in your dependencies:
 ```
