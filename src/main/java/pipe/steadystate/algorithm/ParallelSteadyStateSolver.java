@@ -35,6 +35,8 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
      */
     private final SteadyStateBuilder builder;
 
+	private boolean waitForAllSolversForTesting;
+
     /**
      * Class logger
      */
@@ -98,8 +100,9 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
                 new ExecutorCompletionService<>(executorService);
         List<Future<Map<Integer, Double>>> futures = submit(completionService, records, gsSolver, jacobiSolver);
         try {
-            return completionService.take().get();
-        } catch (InterruptedException | ExecutionException e) {
+//            return completionService.take().get();
+        	return getFirstCompletedFuture(completionService, futures); 
+        } catch (InterruptedException | ExecutionException e ) {
             LOGGER.log(Level.SEVERE, e.getMessage());
             return new HashMap<>();
         }
@@ -109,6 +112,23 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
             }
         }
     }
+
+	protected Map<Integer, Double> getFirstCompletedFuture(
+			CompletionService<Map<Integer, Double>> completionService,
+			List<Future<Map<Integer, Double>>> futures)
+			throws InterruptedException, ExecutionException {
+		
+		if (!waitForAllSolversForTesting) {
+            return completionService.take().get();
+		} 
+		else {
+			List<Future<Map<Integer, Double>>> futureResults = new ArrayList<>();  
+			for (int i = 0; i < futures.size(); i++) {
+				futureResults.add(completionService.poll(1000, TimeUnit.MILLISECONDS)); 
+			}
+			return futureResults.get(0).get();
+		}
+	}
 
     /**
      * Solves the steady state entirely with jacobi
@@ -190,4 +210,8 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
             return solver.solve(records);
         }
     }
+
+	protected void waitForAllSolversForTesting(boolean waitForAllSolversForTesting) {
+		this.waitForAllSolversForTesting = waitForAllSolversForTesting; 
+	}
 }
