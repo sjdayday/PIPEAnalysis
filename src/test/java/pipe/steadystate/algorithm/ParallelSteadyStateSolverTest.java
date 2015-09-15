@@ -69,12 +69,16 @@ public class ParallelSteadyStateSolverTest {
      * and then solves for (I-Q)^Tx^T = 0
      * we need to pick a matrix which once transformed is diagonally
      * dominant once subtracted from I.
-     *
-     * This can be the following Matrix:
+     * 
+     * This can be the Matrix below.
+     * 
+     * In production, we return the first result we find.  For testing, we need to 
+     * verify that both solvers are invoked.  
      */
     @Test
-    public void runsComboForNonDiagonallyDominantMatrix() {
+    public void runsComboForNonDiagonallyDominantMatrix()  {
         ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
+        solver.waitForAllSolversForTesting(true); 
 
         List<Record> records = new ArrayList<>();
         Map<Integer, Double> successors0 = new HashMap<>();
