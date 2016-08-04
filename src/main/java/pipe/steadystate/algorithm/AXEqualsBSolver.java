@@ -14,9 +14,9 @@ import java.util.logging.Logger;
  * Solves AX = 0 steady states by converting a CTMC matrix A into
  * a DTMC Q and solves for (I-Q)^Tx^T = 0
  * where Q = A/a + I where a = max |a_ii|
- * <p/>
+ * <p>
  * this is equivalent to solving (A/-a)^T = 0
- * w
+ * </p>
  */
 public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
     /**
@@ -30,16 +30,16 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
     /**
      * Solves for a CTMC by first transforming it into a DTMC via uniformization:
      * Q = A/a + I
-     * where a > max |a_ii|
-     * <p/>
+     * where a &gt; max |a_ii|
+     * <p>
      * We then solve for a DTMC pQ = p
      *
-     * NOTE: States must be labelled in increasing row order from 0->N in +1 increments for this method to work
+     * NOTE: States must be labelled in increasing row order from 0 to N in +1 increments for this method to work
      *       That is all records and their transitions must have been labelled in +1 increments from 0
      *
      *
      * @param A matrix A.
-     * @return
+     * @return solved matrix 
      */
     @Override
     public final Map<Integer, Double> solve(List<Record> A) {
@@ -72,9 +72,9 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
 
 
     /**
-     * Normalises x by dividing every value in it by its total sum
-     * @param x
-     * @return normalised x
+     * Normalizes x by dividing every value in it by its total sum
+     * @param x list to be normalized
+     * @return normalized x
      */
     protected final Map<Integer, Double> normalize(List<Double> x) {
         double sum = 0;
@@ -97,9 +97,9 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
 
 
     /**
-     * Abstract method which delagates solving to subclasses who solve in the form Ax = b
-     * @param records
-     * @param diagonalElements
+     * Abstract method which delegates solving to subclasses who solve in the form Ax = b
+     * @param records to be solved 
+     * @param diagonalElements diagonals
      * @return solved steady state
      */
     protected abstract List<Double> solve(Map<Integer, Map<Integer, Double>> records,
@@ -113,7 +113,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      *
      * @param row the current non-zero row values in A, note A should be 0 along the diagonal
      * @param x current guess for x
-     * @return
+     * @return sum 
      */
     protected final double multiplyAndSum(Map<Integer, Double> row, List<Double> x) {
         double sum = 0;
@@ -132,7 +132,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      *
      * @param row the current non-zero row values in A, note A should be 0 along the diagonal
      * @param x current guess for x
-     * @return
+     * @return sum 
      */
     protected final double multiplyAndSum(Map<Integer, Double> row, AtomicReferenceArray<Double> x) {
         double sum = 0;
@@ -145,16 +145,17 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
     }
 
     /**
-     * Checks to see if gauss seidel has converged. That is if Ax < EPSILON
-     * <p/>
+     * Checks to see if gauss seidel has converged. That is if Ax &lt; EPSILON
+     * <p>
      * It does this on a row level, returning false early if one of the
-     * row sums is >= EPSILON
-     * <p/>
-     * If Ax < EPSILON we finally check that the answer is plausible. That is that every value in
-     * x >= 0
+     * row sums is &gt;= EPSILON
+     * </p><p>
+     * If Ax &lt; EPSILON we finally check that the answer is plausible. That is that every value in
+     * x &gt;= 0
      *
-     * @param records
-     * @param x
+     * @param records to be evaluated
+     * @param x converged list 
+     * @param diagonals to process 
      * @return true if every value for x has converged
      */
     protected final boolean hasConverged(Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonals,
@@ -173,16 +174,17 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
 
 
     /**
-     * Checks to see if gauss seidel has converged. That is if Ax < EPSILON
-     * <p/>
+     * Checks to see if gauss seidel has converged. That is if Ax &lt; EPSILON
+     * <p>
      * It does this on a row level, returning false early if one of the
-     * row sums is >= EPSILON
-     * <p/>
-     * If Ax < EPSILON we finally check that the answer is plausible. That is that every value in
-     * x >= 0
-     *
-     * @param records
-     * @param x
+     * row sums is &gt;= EPSILON
+     * </p><p>
+     * If Ax &lt; EPSILON we finally check that the answer is plausible. That is that every value in
+     * x &gt;= 0
+     * </p>
+     * @param records to be evaluated
+     * @param x converged list 
+     * @param diagonals to process 
      * @return true if every value for x has converged
      */
     protected final boolean hasConverged(Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonals,
@@ -202,9 +204,9 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
 
     /**
      * Calculates if x is plausible for the steady state, that is every value of x
-     * must be >= 0
+     * must be &gt;= 0
      *
-     * @param x
+     * @param x list to evaluate
      * @return true if x is a plausible answer for the steady state
      */
     private boolean isPlausible(List<Double> x) {
@@ -218,9 +220,9 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
 
     /**
      * Calculates if x is plausible for the steady state, that is every value of x
-     * must be >= 0
+     * must be &gt;= 0
      *
-     * @param x
+     * @param x list to evaluate
      * @return true if x is a plausible answer for the steady state
      */
     private boolean isPlausible(AtomicReferenceArray<Double> x) {
@@ -274,7 +276,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      *
      * Initialises each value of x to a first guess of 1
      *
-     * @param records
+     * @param records to initialize
      * @return initial guess for x
      */
     protected final List<Double> initialiseXWithGuessList(Map<Integer, Map<Integer, Double>> records) {

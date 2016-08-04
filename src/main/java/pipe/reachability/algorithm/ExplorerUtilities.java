@@ -1,11 +1,11 @@
 package pipe.reachability.algorithm;
 
+import java.util.Collection;
+import java.util.Map;
+
 import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.models.petrinet.Transition;
 import uk.ac.imperial.state.ClassifiedState;
-
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * Useful class for performing state calculations on a Petri net
@@ -38,9 +38,14 @@ public interface ExplorerUtilities {
      * Calculates the rate of a  transition from a tangible state to the successor state.
      * It does this by calculating the transitions that are enabled at the given state,
      * the transitions that can be reached from that state and performs the intersection of the two.
-     * <p/>
+     * <p>
      * It then sums the firing rates of this intersection and divides by the sum of the firing rates
      * of the enabled transition
+     * </p>
+     * @param state to evaluate
+     * @param successor  rate to the successor state
+     * @return rate of transition from tangible state to successor 
+     * @throws InvalidRateException functional rate expression invalid
      */
     double rate(ClassifiedState state, ClassifiedState successor) throws InvalidRateException;
 
@@ -48,10 +53,10 @@ public interface ExplorerUtilities {
      *
      * Calculates the current underling state of the Petri net
      * and creates a new state.
-     *
+     * <p>
      * It determines if it is a vanishing or tangible transition and returns
      * the correct implementation accordingly.
-     *
+     * </p>
      * @return underlying state of the Petri net
      */
     ClassifiedState getCurrentState();
@@ -71,9 +76,10 @@ public interface ExplorerUtilities {
      * Sums up the weights of the transitions. Transitions may have functional rates
      *
      *
-     * @param state
-     * @param transitions
+     * @param state to evaluate
+     * @param transitions whose weights are to be summed
      * @return summed up the weight of the transitions specified
+     * @throws InvalidRateException functional rate expression invalid
      */
     double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions) throws InvalidRateException;
 
@@ -94,7 +100,7 @@ public interface ExplorerUtilities {
     /**
      * Since it is possible for reachability graphs to be infinite this method provides
      * a way to determine if the algorithm should continue past a certain size state count
-     * @param stateCount
+     * @param stateCount count of states 
      * @return if the state space exploration can continue
      */
     boolean canExploreMore(int stateCount);

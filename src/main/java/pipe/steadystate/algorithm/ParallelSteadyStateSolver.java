@@ -45,8 +45,8 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
 
     /**
      * Constructor
-     * @param threads
-     * @param builder
+     * @param threads across which to spread work
+     * @param builder of the state
      */
     public ParallelSteadyStateSolver(int threads, SteadyStateBuilder builder) {
         this.threads = threads;
@@ -55,11 +55,11 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
 
     /**
      * Solves the steady state heuristically by calculating if Jacobi is guaranteed to converge
-     * if so it uses all threas on the Jacobi method
-     *
+     * if so it uses all threads on the Jacobi method
+     * <p>
      * Otherwise it spins up a sequential Gauss Seidel to solve in a single thread and Jacobi in the
-     * rest and takes the first result which converges
-     * @param records
+     * rest and takes the first result which converges </p>
+     * @param records to solve
      * @return steady state x
      */
     @Override
@@ -85,9 +85,9 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
      * Solves by running a sequential GS & a parallel jacobi implementation in parallel.
      * Sequential GS is run because there is no guarantee that Jacobi will converge
      * It takes the first result that is done
-     * @param records
-     * @param executorService
-     * @return
+     * @param records to solve
+     * @param executorService service 
+     * @return solution
      */
     private Map<Integer, Double> solveWithJacobiAndGS(List<Record> records, ExecutorService executorService) {
         SteadyStateSolver gsSolver = builder.buildGaussSeidel();
@@ -132,8 +132,8 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
 
     /**
      * Solves the steady state entirely with jacobi
-     * @param records
-     * @param executorService
+     * @param records to evaluate 
+     * @param executorService service
      * @return normalized steady state
      */
     private Map<Integer, Double> solveWithJacobi(List<Record> records, ExecutorService executorService) {
@@ -142,9 +142,9 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
     }
 
     /**
-     * Matrix is diagonally dominant if |a_ii| >= sum_for_all_i_neq_j |a_ij|
-     * @param records
-     * @param diagonalElements
+     * Matrix is diagonally dominant if |a_ii| &gt;= sum_for_all_i_neq_j |a_ij|
+     * @param records to evaluate
+     * @param diagonalElements diagonals 
      * @return true if diagonally dominant
      */
     private boolean isDiagonallyDominant(Map<Integer, Map<Integer, Double>> records,
@@ -164,9 +164,9 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
      *
      * Steady state solvers can be one or more and it will return the futures that are running
      *
-     * @param completionService
-     * @param records
-     * @param solvers
+     * @param completionService service
+     * @param records to process
+     * @param solvers tasks
      * @return futures that are now running
      */
     private List<Future<Map<Integer, Double>>> submit(CompletionService<Map<Integer, Double>> completionService,
@@ -180,7 +180,7 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
 
     /**
      *
-     * @param entry
+     * @param entry to process
      * @return absolute sum of the rows of the entry
      */
     private double getAbsRowSum(Map.Entry<Integer, Map<Integer, Double>> entry) {

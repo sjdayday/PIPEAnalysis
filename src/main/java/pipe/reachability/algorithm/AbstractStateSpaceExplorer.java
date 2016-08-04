@@ -14,8 +14,9 @@ import java.util.logging.Logger;
 
 /**
  * Abstract state space explorer that contains useful methods for exploring the state space.
- * <p/>
+ * <p>
  * The actual exploration method is delgated to subclasses
+ * </p>
  */
 public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
@@ -47,13 +48,13 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     /**
      * Map to register successor states to their rate when exploring a state.
-     * <p/>
+     * <p>
      * When processing a tangible state it is possible that via multiple vanishing states
      * the same tangible state is the successor. In this case the rates must be summed.
-     * <p/>
+     * </p><p>
      * This map is therefore used to write transitions to temporarily whilst processing
      * all successors of a state. It is then used to write the records to the stateWriter
-     * only once all successors have been processed.
+     * only once all successors have been processed.</p>
      */
     protected final Map<ClassifiedState, Double> successorRates = new HashMap<>();
 
@@ -88,12 +89,12 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
      * Generates the state space from the initial state
      *
      * @param initialState starting state for exploration.
-     * @return
-     * @throws TimelessTrapException
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws IOException
-     * @throws InvalidRateException
+     * @throws TimelessTrapException unable to exit cyclic vanishing state
+     * @throws InterruptedException  thread interrupted
+     * @throws ExecutionException task aborted due to exception
+     * @throws IOException error doing IO
+     * @throws InvalidRateException functional rate expression invalid
+     * @return StateSpaceExplorerResults
      */
     @Override
     public final StateSpaceExplorerResults generate(ClassifiedState initialState)
@@ -111,13 +112,16 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     /**
      * Populates tangibleQueue with all starting tangible states.
-     * <p/>
+     * <p>
      * In the case that initialState is tangible then this is just
      * added to the queue.
-     * <p/>
+     * </p><p>
      * Otherwise it must sort through vanishing states
-     *
+     * </p>
      * @param initialState starting state of the algorithm
+     * @throws TimelessTrapException unable to exit cyclic vanishing state
+     * @throws InvalidRateException functional rate expression invalid
+     * 
      */
     protected final void exploreInitialState(ClassifiedState initialState)
             throws TimelessTrapException, InvalidRateException {
@@ -134,15 +138,15 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     }
 
     /**
-     * Abstratc method which performs the actual state space exploration algorithm.
+     * Abstract method which performs the actual state space exploration algorithm.
      * This algorithm should make use of the explorationQueue and will write the results out
      * via the stateProcessor
      *
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws TimelessTrapException
-     * @throws IOException
-     * @throws InvalidRateException
+     * @throws TimelessTrapException unable to exit cyclic vanishing state
+     * @throws InterruptedException  thread interrupted
+     * @throws ExecutionException task aborted due to exception
+     * @throws IOException error doing IO
+     * @throws InvalidRateException functional rate expression invalid
      */
     protected abstract void stateSpaceExploration()
             throws InterruptedException, ExecutionException, TimelessTrapException, IOException, InvalidRateException;
@@ -187,10 +191,10 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     /**
      * Register the successor into successorRates map
-     * <p/>
+     * <p>
      * If successor already exists then the rate is summed, if not it
      * is added as a new entry
-     *
+     * </p>
      * @param successor key to successor rates
      * @param rate      rate at which successor is entered via some transition
      */
@@ -205,10 +209,10 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
 
     /**
      * Marks each state in explored as explored if it is not already in the explored set.
-     * <p/>
+     * <p>
      * It must do the contains check to ensure it does not get two different unique numbers
-     *
-     * @param exploredStates
+     * </p>
+     * @param exploredStates to be marked
      */
     protected final void markAsExplored(Collection<ClassifiedState> exploredStates) {
         for (ClassifiedState state : exploredStates) {
@@ -221,13 +225,13 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     /**
      * This method writes all state transitions in the map stateTransitions out to the
      * state writer.
-     * <p/>
+     * <p>
      * It is assumed that no duplicate transitions exist by this point and that their rates
      * have been summed up. If this is not the case then multiple transitions will be written to
      * disk and must be dealt with accordingly.
-     *
+     * </p>
      * @param state          the current state that successors belong to
-     * @param successorRates
+     * @param successorRates rates of successors 
      */
     protected final void writeStateTransitions(ClassifiedState state, Map<ClassifiedState, Double> successorRates) {
         Map<Integer, Double> transitions = getIntegerTransitions(successorRates);

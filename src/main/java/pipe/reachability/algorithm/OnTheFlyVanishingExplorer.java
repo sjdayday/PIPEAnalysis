@@ -4,24 +4,26 @@ import uk.ac.imperial.pipe.exceptions.InvalidRateException;
 import uk.ac.imperial.pipe.models.petrinet.Transition;
 import uk.ac.imperial.state.ClassifiedState;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Abstract class that contains the shared code for vanishing explorers
  *
- *  * <p/>
+ *  * <p>
  * It performs on the fly vanishing state elimination, producing the reachability graph for tangible states.
  * A tangible state is one in which:
  * a) Has no enabled transitions
  * b) Has entirely timed transitions leaving it
- * <p/>
+ * </p><p>
  *
  * The difference between the explorers is what happens when a tangible state is found
  * The recorded state is either the last tanigble or the parent vanishin state.
- *
+ * </p>
  * Differing implementations can choose which state to explore
  */
 public final class OnTheFlyVanishingExplorer implements VanishingExplorer {
@@ -46,7 +48,7 @@ public final class OnTheFlyVanishingExplorer implements VanishingExplorer {
 
     /**
      * Constructor that takes the exploration utilities for generating reachability/coverability graphs
-     * @param explorerUtilities
+     * @param explorerUtilities utilities 
      */
     public OnTheFlyVanishingExplorer(ExplorerUtilities explorerUtilities) {
         this.explorerUtilities = explorerUtilities;
@@ -55,16 +57,16 @@ public final class OnTheFlyVanishingExplorer implements VanishingExplorer {
     /**
      * Explores a vanishing state by processing its successors until either no vanishing states
      * are left or ALLOWED_ITERATIONS has been reached in the case of a cycle
-     *
+     * <p>
      * Whilst performing this processing, any tangible states seen are registered with the current
      * rate at which the state transitions into them. If we see a transition more than once then its rate
      * is summed.
-     *
+     * </p>
      * @param vanishingState vanishing state to explore.
      * @param rate rate at which vanishingState is entered from the previous state
      * @return tangible transitions that the vanishing state transitions to.
-     * @throws TimelessTrapException
-     * @throws InvalidRateException
+     * @throws TimelessTrapException unable to exit cyclic vanishing state
+     * @throws InvalidRateException functional rate expression invalid
      */
     @Override
     public Collection<StateRateRecord> explore(ClassifiedState vanishingState, double rate)
@@ -102,6 +104,7 @@ public final class OnTheFlyVanishingExplorer implements VanishingExplorer {
      * @param state     initial state
      * @param successor next state
      * @return the probability of transitioning to the successor state from state
+     * @throws InvalidRateException functional rate expression invalid
      */
     private double probability(ClassifiedState state, ClassifiedState successor) throws InvalidRateException {
         Collection<Transition> marked = explorerUtilities.getTransitions(state, successor);

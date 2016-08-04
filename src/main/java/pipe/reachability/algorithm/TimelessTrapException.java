@@ -6,8 +6,13 @@ package pipe.reachability.algorithm;
  */
 public class TimelessTrapException extends Exception {
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
      * Registers the underlying cause of the timeless trap exception
-     * @param cause
+     * @param cause of the exception
      */
     public TimelessTrapException(Throwable cause) {
         super(cause);
@@ -22,7 +27,7 @@ public class TimelessTrapException extends Exception {
 
     /**
      * Exception with the following message
-     * @param message
+     * @param message explaining the exception
      */
     public TimelessTrapException(String message) {
         super(message);
@@ -30,8 +35,8 @@ public class TimelessTrapException extends Exception {
 
     /**
      * Exception with message and cause
-     * @param message
-     * @param cause
+     * @param message explaining the exception
+     * @param cause of the exception
      */
     public TimelessTrapException(String message, Throwable cause) {
         super(message, cause);

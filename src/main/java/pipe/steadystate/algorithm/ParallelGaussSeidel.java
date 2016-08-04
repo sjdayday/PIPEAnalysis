@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 /**
  * Solves Ax = b in a parallel asynchronous fashion
  *
- * NOTE: States must be labelled in increasing row order from 0->N in +1 increments for this method to work
- *       That is all records and their transitions must have been labelled in +1 increments from 0
+ * NOTE: States must be labeled in increasing row order from 0 to N in +1 increments for this method to work
+ *       That is all records and their transitions must have been labeled in +1 increments from 0
  */
 public class ParallelGaussSeidel extends AXEqualsBSolver {
 
@@ -57,8 +57,8 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
      *
      * Iterations continue until x converges
      *
-     * @param records
-     * @param diagonalElements
+     * @param records to solve
+     * @param diagonalElements diagonals
      * @return normalized x
      */
     @Override
@@ -94,12 +94,12 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
      * Splits the solving of x across the number of threads. For example if x is an 8x8 matrix and there are two
      * threads then each thread will solve 4 rows. If x is a 10x10 matrix and there are 3 threads then
      * two threads will solve 3 rows and one thread wills solve 4 rows.
-     * @param threads
-     * @param records
-     * @param diagonalElements
+     * @param threads for task processing
+     * @param records matrix 
+     * @param diagonalElements diagonals
      * @param executorService
-     * @param x
-     * @return
+     * @param x list 
+     * @return latch 
      */
     private CountDownLatch submitTasks(int threads, Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements,
                                        ExecutorService executorService, AtomicReferenceArray<Double> x) {
@@ -124,13 +124,13 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
 
     /**
      * Creates the worker thread
-     * @param from
-     * @param to
-     * @param latch
-     * @param x
-     * @param records
-     * @param diagonalElements
-     * @return initialised worker thread
+     * @param from start
+     * @param to  end
+     * @param latch to use
+     * @param x list 
+     * @param records matrix
+     * @param diagonalElements diagonals
+     * @return initialized worker thread
      */
     public Runnable createRunnable(int from, int to, CountDownLatch latch, AtomicReferenceArray<Double> x, Map<Integer, Map<Integer, Double>> records,
                                    Map<Integer, Double> diagonalElements) {
@@ -174,12 +174,12 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
 
         /**
          * Initialises this task with the information it needs
-         * @param from
-         * @param to
-         * @param latch
-         * @param records
-         * @param x
-         * @param diagonalElements
+	     * @param from start
+	     * @param to  end
+	     * @param latch to use
+	     * @param x list 
+	     * @param records matrix
+	     * @param diagonalElements diagonals
          */
         private ParallelSolver(int from, int to, CountDownLatch latch, Map<Integer, Map<Integer, Double>> records, AtomicReferenceArray<Double> x,
                                Map<Integer, Double> diagonalElements) {

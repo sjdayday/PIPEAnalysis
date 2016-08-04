@@ -4,7 +4,7 @@ import uk.ac.imperial.state.ClassifiedState;
 
 /**
  * Record containing a  state and the rate into it.
- * USed for the state space exploration algorithm to perform on the fly
+ * Used for the state space exploration algorithm to perform on the fly
  * elimination of vanishing states.
  */
 public final class StateRateRecord {
@@ -21,8 +21,8 @@ public final class StateRateRecord {
 
     /**
      * Constructor that sets the state and rate for the record
-     * @param state
-     * @param rate
+     * @param state to be stored
+     * @param rate to be stored
      */
     public StateRateRecord(ClassifiedState state, double rate) {
         this.state = state;
