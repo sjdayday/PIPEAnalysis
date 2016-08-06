@@ -7,6 +7,7 @@ import uk.ac.imperial.state.ClassifiedState;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,8 +37,12 @@ public final class SequentialStateSpaceExplorer extends AbstractStateSpaceExplor
     /**
      * Performs state space exploration of the tangibleQueue
      * popping a state off the stack and exploring all its successors.
-     * <p/>
+     * <p>
      * It records the reachability graph into the writer
+     * </p>
+     * @throws TimelessTrapException unable to exit cyclic vanishing state
+     * @throws IOException error doing IO
+     * @throws InvalidRateException functional rate expression invalid
      */
     @Override
     protected void stateSpaceExploration() throws TimelessTrapException, IOException, InvalidRateException {

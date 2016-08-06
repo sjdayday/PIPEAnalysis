@@ -4,8 +4,9 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * Builds the underlying implementations of the steady state that this package contains
- * <p/>
+ * <p>
  * Note that a Jacobi parallel solver is preferred to the power method
+ * </p>
  */
 public final class SteadyStateBuilderImpl implements SteadyStateBuilder
 

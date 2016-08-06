@@ -16,8 +16,8 @@ public final class GaussSeidelSolver extends AXEqualsBSolver {
      *
      * A is the records which represent a sparse matrix.
      *
-     * @param records
-     * @param diagonalElements
+     * @param records to solve
+     * @param diagonalElements diagonals
      * @return unnormalized x
      */
     @Override

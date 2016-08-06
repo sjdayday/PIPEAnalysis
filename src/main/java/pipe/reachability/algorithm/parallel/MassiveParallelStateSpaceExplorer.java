@@ -16,13 +16,14 @@ import java.util.logging.Logger;
  * At every iteration of the exploration these threads are submitted with a
  * maximum number of states they can fully explore before returning with
  * their results.
- * <p/>
+ * <p>
  * In effect this state space exploration is a thread level map reduce where states are
  * mapped onto threads and at the end of their run the results are reduced down into a
  * single result.
- * <p/>
+ * </p><p>
  * The iteration then continues performing another map reduce with the left over states
- * to explore from the previous iteration.
+ * to explore from the previous iteration. 
+ * </p>
  */
 public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceExplorer {
     /**
@@ -53,11 +54,12 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
     /**
      * Constructor for generating massive state space exploration
      *
-     * @param explorerUtilities
-     * @param vanishingExplorer
-     * @param stateProcessor
+     * @param explorerUtilities utilities
+     * @param vanishingExplorer explorer
+     * @param stateProcessor  processor
      * @param statesPerThread   the number of states to allow each thread to explore in a single iteration
      *                          before returning to join the results together
+     * @param threads across which to spread work                           
      */
     public MassiveParallelStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
                                              StateProcessor stateProcessor, int threads, int statesPerThread) {
@@ -71,16 +73,16 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      * Performs state space exploration by spinning up threads and allowing them to process
      * states in parallel. The number of states that each thread processes is set in the constructor
      * and is statesPerThread.
-     * <p/>
+     * <p>
      * Results are then merged together into the explored and explorationQueue data sets
      * and transitions are written to the output stream.
-     * <p/>
+     * </p><p>
      * A possible extension to this is to have the threads ask for work
      * if they run out and/or dynamically scale the number of threads processed according to
      * how it benefits each different state space.
-     *
-     * @throws InterruptedException
-     * @throws ExecutionException
+     * </p>
+     * @throws InterruptedException  thread interrupted
+     * @throws ExecutionException task aborted due to exception
      * @throws TimelessTrapException if vanishing states lead to a timeless trap
      */
     @Override
@@ -134,8 +136,9 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
     /**
      * Callable implementation that explores a state and its successors up to a certain
      * depth.
-     * <p/>
+     * <p>
      * It registers all transitions that it observes
+     * </p>
      */
     private final class MultiStateExplorer implements Callable<Collection<Void>> {
         private MultiStateExplorer(){}
@@ -147,7 +150,8 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          *
          * @return the result of a BFS including any transitions seen, states that have not yet been explored
          * and those that have.
-         * @throws TimelessTrapException
+         * @throws TimelessTrapException unable to exit cyclic vanishing state
+         * @throws InvalidRateException functional rate expression invalid
          */
         @Override
         public Collection<Void> call() throws TimelessTrapException, InvalidRateException {
@@ -195,9 +199,9 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          * summed within the rate.
          */
         /**
-         * @param successor
-         * @param rate
-         * @param successorRates
+         * @param successor state
+         * @param rate of the successor 
+         * @param successorRates map of the successor rates
          */
         private void registerStateRate(ClassifiedState successor, double rate,
                                        Map<ClassifiedState, Double> successorRates) {
@@ -210,7 +214,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         }
 
         /**
-         * @param state
+         * @param state to evaluate
          * @return true if the state has already been explored
          */
         private boolean seen(ClassifiedState state) {
@@ -220,8 +224,8 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         /**
          * Puts the state and its rates into the transitions data structure
          *
-         * @param state
-         * @param successorRates
+         * @param state to be written
+         * @param successorRates to be written 
          */
         private void writeStateTransitions(ClassifiedState state, Map<ClassifiedState, Double> successorRates) {
             if (!iterationTransitions.containsKey(state)) {

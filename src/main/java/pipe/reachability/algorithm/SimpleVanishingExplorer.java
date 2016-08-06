@@ -1,9 +1,9 @@
 package pipe.reachability.algorithm;
 
-import uk.ac.imperial.state.ClassifiedState;
-
 import java.util.Arrays;
 import java.util.Collection;
+
+import uk.ac.imperial.state.ClassifiedState;
 
 /**
  * This state performs no computation of vanishing states and simply
@@ -15,7 +15,7 @@ public final class SimpleVanishingExplorer implements VanishingExplorer {
      * @param vanishingState vanishing state to explore.
      * @param rate rate at which vanishingState is entered from the previous state
      * @return the exact vanishing state to explore
-     * @throws TimelessTrapException
+     * @throws TimelessTrapException unable to exit cyclic vanishing state
      */
     @Override
     public Collection<StateRateRecord> explore(ClassifiedState vanishingState, double rate)

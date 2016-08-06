@@ -19,7 +19,7 @@ public final class UnboundedExplorerUtilities extends CachingExplorerUtilities {
 
     /**
      *
-     * @param stateCount
+     * @param stateCount count of the states 
      * @return true because this is an unbounded implementation
      */
     @Override

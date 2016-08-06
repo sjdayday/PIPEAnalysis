@@ -25,7 +25,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
     /**
      * Epsilon value used for testing if gauss seidel has converged.
      * We are trying to solve for Ax = 0, but we will accept
-     * Ax < EPSILON
+     * Ax &lt; EPSILON
      */
     protected static final double EPSILON = 0.000001;
 
@@ -36,7 +36,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      * A^t x^t = 0
      *
      *
-     * @param records
+     * @param records to be transposed
      * @return transpose of records with each integer state mapping to its successors
      */
     protected final Map<Integer, Map<Integer, Double>> transpose(List<Record> records) {
@@ -59,12 +59,12 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      * Searches for the largest absolute diagonal and then returns q the dividor in
      * turning a CTMC matrix A, into a DTMC matrix Q using
      * Q = A/a + I
-     * <p/>
-     * a is calculated by adding 1 to the largest value, since the largest >= 0 we never
+     * <p>
+     * a is calculated by adding 1 to the largest value, since the largest &gt;= 0 we never
      * run the risk of returning 0
-     *
-     * @param diagonals
-     * @return a > max |a_ii|
+     * </p>
+     * @param diagonals to evaluate
+     * @return a &gt; max |a_ii|
      */
     protected final double geta(Map<Integer, Double> diagonals) {
         List<Double> values = new ArrayList<>(diagonals.values());
@@ -83,8 +83,8 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      *
      * Returns the map for the successor rates, if it does not exist it is created and added
      * to transitions before returning
-     * @param transpose
-     * @param state
+     * @param transpose of the matrix
+     * @param state to evaluate
      * @return successor map for state in the transpose matrix
      */
     private Map<Integer, Double> createAndGet(Map<Integer, Map<Integer, Double>> transpose, Integer state) {
@@ -115,9 +115,9 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
     }
 
     /**
-     * Normalises x by dividing every value in it by its total sum
-     * @param x
-     * @return normalised x
+     * Normalizes x by dividing every value in it by its total sum
+     * @param x to be normalized
+     * @return normalized x
      */
     protected final Map<Integer, Double> normalize(Map<Integer, Double> x) {
         double sum = 0;
@@ -138,9 +138,9 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
 
     /**
      *
-     * Initialises each value of x to a first guess of 1
+     * Initializes each value of x to a first guess of 1
      *
-     * @param records
+     * @param records to be initialized
      * @return initial guess for x
      */
     protected final Map<Integer, Double> initialiseXWithGuess(Map<Integer, Map<Integer, Double>> records) {
@@ -158,7 +158,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
      *
      * @param row the current non-zero row values in A, note A should be 0 along the diagonal
      * @param x current guess for x
-     * @return
+     * @return sum 
      */
     protected final double multiplyAndSum(Map<Integer, Double> row, Map<Integer, Double> x) {
         double sum = 0;
@@ -174,12 +174,12 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
     /**
      * The diagonal elements of the A matrix are those where an element maps
      * to itself, since no self loops are allowed.
-     * <p/>
+     * <p>
      * The diagonal element is the negated sum of all other row elements
-     * <p/>
+     * </p><p>
      * It is calculated via summing a states successors and negating the value
-     *
-     * @param records
+     * </p>
+     * @param records to be calculated
      * @return diagonal values of the A matrix
      */
     protected final Map<Integer, Double> calculateDiagonals(List<Record> records) {
@@ -198,8 +198,8 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
 
     /**
      * Divdes every value in matrix A by a
-     * @param A
-     * @param a
+     * @param A matrix
+     * @param a scalar
      * @return divided matrix
      */
     protected final List<Record> divide(List<Record> A, double a) {
@@ -213,9 +213,9 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
     /**
      * Divides the specified row by a
      *
-     * @param a
-     * @param row
-     * @return
+     * @param a scalar
+     * @param row matrix row
+     * @return divided row
      */
     protected final Map<Integer, Double> divide(double a, Map<Integer, Double> row) {
         Map<Integer, Double> divided = new HashMap<>();

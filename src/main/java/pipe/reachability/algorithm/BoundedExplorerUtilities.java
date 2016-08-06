@@ -21,7 +21,7 @@ public class BoundedExplorerUtilities extends CachingExplorerUtilities {
     }
 
     /**
-     * @param stateCount
+     * @param stateCount count of the number of states  
      * @return if the state count is less than or equal to the maximum number of states
      */
     @Override

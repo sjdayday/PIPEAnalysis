@@ -16,13 +16,15 @@ import uk.ac.imperial.state.HashedClassifiedState;
 import uk.ac.imperial.state.HashedStateBuilder;
 import uk.ac.imperial.state.State;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Useful methods to help explore the state space.
- * <p/>
- * Performs caching of frequent computations
+ * <p>
+ * Performs caching of frequent computations </p>
  */
 public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     /**
@@ -38,8 +40,9 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     /**
      * Cached successors is used when exploring states to quickly determine
      * a states successors it has already seen before.
-     * <p/>
+     * <p>
      * It will be most useful when exploring cyclic transitions
+     * </p>
      */
     private Map<ClassifiedState, Map<ClassifiedState, Collection<Transition>>> cachedSuccessors =
             new ConcurrentHashMap<>();
@@ -58,12 +61,12 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     /**
      * Finds successors of the given state. A successor is a state that occurs
      * when one of the enabled transitions in the current state is fired.
-     * <p/>
+     * <p>
      * Performs caching of the successors to speed up computation time
      * when a state is queried more than once. This is particularly useful
      * if on the fly vanishing state exploration is used
-     *
-     * @param state
+     * </p>
+     * @param state to evaluate
      * @return map of successor states to the transitions that caused them
      */
     @Override
@@ -96,10 +99,10 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     /**
-     * @param state
-     * @param successor
+     * @param state to evaluate
+     * @param successor of the state
      * @return the rate at which the state transitions to the successor in the underlying Petri net
-     * @throws InvalidRateException
+     * @throws InvalidRateException functional rate expression invalid
      */
     @Override
     public final double rate(ClassifiedState state, ClassifiedState successor) throws InvalidRateException {
@@ -131,7 +134,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     /**
      * Classifies the state into tangible or vanishing
      *
-     * @param state
+     * @param state to be evaluated
      * @return classified state
      */
     public final ClassifiedState classify(State state) {
@@ -163,10 +166,10 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
 
     /**
      * Calculates the set of transitions that will take you from one state to the successor.
-     * <p/>
+     * <p>
      * Uses the current underlying cached methods so that duplicate calls to this method
      * will not result in another computation
-     *
+     * </p>
      * @param state     initial state
      * @param successor successor state, must be directly reachable from the state
      * @return enabled transitions that take you from state to successor, if it is not directly reachable then
@@ -186,8 +189,8 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     /**
      * Sums up the weights of the transitions. Transitions may have functional rates
      *
-     * @param state
-     * @param transitions
+     * @param state to evaluate
+     * @param transitions whose weights are to be summed 
      * @return summed up the weight of the transitions specified
      */
     @Override
@@ -211,7 +214,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
     }
 
     /**
-     * @param state
+     * @param state to evaluate
      * @return all enabled transitions for the specified state
      */
     @Override
