@@ -5,7 +5,7 @@
 
     <artifactId>pipe-analysis</artifactId>
     <groupId>uk.ac.imperial</groupId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
 
 
     <properties>
@@ -46,13 +46,13 @@
         <dependency>
             <groupId>uk.ac.imperial</groupId>
             <artifactId>pipe-core</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>uk.ac.imperial</groupId>
             <artifactId>pipe-markov-chain</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
 
 
@@ -258,15 +258,6 @@
 
         </plugins>
     </build>
-
-<!--     <distributionManagement>
-        <repository>
-            <id>internal.repo</id>
-            <name>Temporary Staging Repository</name>
-            <url>file://${project.build.directory}/mvn-repo</url>
-        </repository>
-    </distributionManagement>
- -->
 
 
 </project>
