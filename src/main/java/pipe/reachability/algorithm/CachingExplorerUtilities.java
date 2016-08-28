@@ -55,7 +55,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      */
     public CachingExplorerUtilities(PetriNet petriNet) {
         this.petriNet = ClonePetriNet.clone(petriNet);
-        animationLogic = new PetriNetAnimationLogic(this.petriNet);
+        animationLogic = new PetriNetAnimationLogic(this.petriNet.getExecutablePetriNet());
     }
 
     /**
@@ -198,7 +198,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
             throws InvalidRateException {
         double weight = 0;
 
-        StateEvalVisitor evalVisitor = new StateEvalVisitor(petriNet, state);
+        StateEvalVisitor evalVisitor = new StateEvalVisitor(petriNet.getExecutablePetriNet(), state);
         PetriNetWeightParser parser = new PetriNetWeightParser(evalVisitor, petriNet);
         for (Transition transition : transitions) {
             FunctionalResults<Double> results = parser.evaluateExpression(transition.getRateExpr());
