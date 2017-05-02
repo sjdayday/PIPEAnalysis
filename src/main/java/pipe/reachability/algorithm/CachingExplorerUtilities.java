@@ -1,9 +1,9 @@
 package pipe.reachability.algorithm;
 
-import uk.ac.imperial.pipe.animation.AnimationLogic;
-import uk.ac.imperial.pipe.animation.PetriNetAnimationLogic;
 import uk.ac.imperial.pipe.exceptions.InvalidRateException;
+import uk.ac.imperial.pipe.models.petrinet.AnimationLogic;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
+import uk.ac.imperial.pipe.models.petrinet.PetriNetAnimationLogic;
 import uk.ac.imperial.pipe.models.petrinet.Place;
 import uk.ac.imperial.pipe.models.petrinet.Token;
 import uk.ac.imperial.pipe.models.petrinet.Transition;

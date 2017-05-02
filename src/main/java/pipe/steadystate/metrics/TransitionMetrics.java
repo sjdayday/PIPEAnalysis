@@ -1,9 +1,9 @@
 package pipe.steadystate.metrics;
 
-import uk.ac.imperial.pipe.animation.AnimationLogic;
-import uk.ac.imperial.pipe.animation.PetriNetAnimationLogic;
+import uk.ac.imperial.pipe.models.petrinet.AnimationLogic;
 import uk.ac.imperial.pipe.models.petrinet.ExecutablePetriNet;
 import uk.ac.imperial.pipe.models.petrinet.PetriNet;
+import uk.ac.imperial.pipe.models.petrinet.PetriNetAnimationLogic;
 import uk.ac.imperial.pipe.models.petrinet.Transition;
 import uk.ac.imperial.state.ClassifiedState;
 
