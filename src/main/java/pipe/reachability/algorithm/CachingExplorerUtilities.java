@@ -10,7 +10,7 @@ import uk.ac.imperial.pipe.models.petrinet.Transition;
 import uk.ac.imperial.pipe.parsers.FunctionalResults;
 import uk.ac.imperial.pipe.parsers.PetriNetWeightParser;
 import uk.ac.imperial.pipe.parsers.StateEvalVisitor;
-import uk.ac.imperial.pipe.visitor.ClonePetriNet;
+import uk.ac.imperial.pipe.visitor.PetriNetCloner;
 import uk.ac.imperial.state.ClassifiedState;
 import uk.ac.imperial.state.HashedClassifiedState;
 import uk.ac.imperial.state.HashedStateBuilder;
@@ -54,7 +54,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      * @param petriNet petri net to use for state space exploration
      */
     public CachingExplorerUtilities(PetriNet petriNet) {
-        this.petriNet = ClonePetriNet.clone(petriNet);
+        this.petriNet = PetriNetCloner.clone(petriNet);
         animationLogic = new PetriNetAnimationLogic(this.petriNet.getExecutablePetriNet());
     }
 
