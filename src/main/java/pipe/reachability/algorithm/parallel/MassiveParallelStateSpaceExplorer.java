@@ -50,7 +50,6 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
     private Map<ClassifiedState, Map<ClassifiedState, Double>> iterationTransitions = new ConcurrentHashMap<>();
     private Map<ClassifiedState, Boolean> sharedHashSeen = new ConcurrentHashMap<>();
 
-
     /**
      * Constructor for generating massive state space exploration
      *
@@ -62,11 +61,11 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      * @param threads across which to spread work                           
      */
     public MassiveParallelStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
-                                             StateProcessor stateProcessor, int threads, int statesPerThread) {
+            StateProcessor stateProcessor, int threads, int statesPerThread) {
         super(explorerUtilities, vanishingExplorer, stateProcessor);
 
         this.statesPerThread = statesPerThread;
-        this.threads=threads;
+        this.threads = threads;
     }
 
     /**
@@ -122,7 +121,8 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
         }
 
         executorService.shutdownNow();
-        LOGGER.log(Level.INFO, "Took " + iterations + " iterations to explore state space with " + duration/(double)iterations + " time for each iteration");
+        LOGGER.log(Level.INFO, "Took " + iterations + " iterations to explore state space with " +
+                duration / (double) iterations + " time for each iteration");
     }
 
     private List<MultiStateExplorer> initialiseExplorers() {
@@ -141,8 +141,8 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
      * </p>
      */
     private final class MultiStateExplorer implements Callable<Collection<Void>> {
-        private MultiStateExplorer(){}
-
+        private MultiStateExplorer() {
+        }
 
         /**
          * Performs sequential state space exploration using a BFS up to a certain number
@@ -155,7 +155,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          */
         @Override
         public Collection<Void> call() throws TimelessTrapException, InvalidRateException {
-//            Collection<ClassifiedState> seen = new LinkedList<>();
+            //            Collection<ClassifiedState> seen = new LinkedList<>();
             for (int explored = 0; explored < statesPerThread; explored++) {
                 ClassifiedState state = sharedIterationQueue.poll();
                 //Test to see if sharedIterationQueue is empty
@@ -170,7 +170,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
                         if (!seen(successor)) {
                             sharedIterationQueue.add(successor);
                             addToSharedSeen(successor);
-//                            seen.add(successor);
+                            //                            seen.add(successor);
                         }
                     } else {
                         Collection<StateRateRecord> explorableStates = vanishingExplorer.explore(successor, rate);
@@ -179,7 +179,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
                             if (!seen(record.getState())) {
                                 sharedIterationQueue.add(record.getState());
                                 addToSharedSeen(record.getState());
-//                                seen.add(record.getState());
+                                //                                seen.add(record.getState());
                             }
                         }
                     }
@@ -204,7 +204,7 @@ public final class MassiveParallelStateSpaceExplorer extends AbstractStateSpaceE
          * @param successorRates map of the successor rates
          */
         private void registerStateRate(ClassifiedState successor, double rate,
-                                       Map<ClassifiedState, Double> successorRates) {
+                Map<ClassifiedState, Double> successorRates) {
             if (successorRates.containsKey(successor)) {
                 double previousRate = successorRates.get(successor);
                 successorRates.put(successor, previousRate + rate);

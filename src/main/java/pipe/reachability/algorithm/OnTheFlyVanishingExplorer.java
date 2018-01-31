@@ -45,7 +45,6 @@ public final class OnTheFlyVanishingExplorer implements VanishingExplorer {
      */
     private final ExplorerUtilities explorerUtilities;
 
-
     /**
      * Constructor that takes the exploration utilities for generating reachability/coverability graphs
      * @param explorerUtilities utilities 
@@ -96,7 +95,6 @@ public final class OnTheFlyVanishingExplorer implements VanishingExplorer {
         return tangibleStatesFound;
     }
 
-
     /**
      * Works out what transitions would lead you to the successor state then divides the sum
      * of their rates by the total rates of all enabled transitions
@@ -112,8 +110,8 @@ public final class OnTheFlyVanishingExplorer implements VanishingExplorer {
             return 0;
         }
         double toSuccessorWeight = explorerUtilities.getWeightOfTransitions(state, marked);
-        double totalWeight =
-                explorerUtilities.getWeightOfTransitions(state, explorerUtilities.getAllEnabledTransitions(state));
+        double totalWeight = explorerUtilities
+                .getWeightOfTransitions(state, explorerUtilities.getAllEnabledTransitions(state));
         return toSuccessorWeight / totalWeight;
     }
 

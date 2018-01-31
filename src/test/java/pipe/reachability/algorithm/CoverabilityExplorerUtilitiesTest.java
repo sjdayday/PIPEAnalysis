@@ -28,18 +28,17 @@ public class CoverabilityExplorerUtilitiesTest {
 
     @Before
     public void setUp() {
-      classifiedUtilities  = new CoverabilityExplorerUtilities(explorerUtilities);
+        classifiedUtilities = new CoverabilityExplorerUtilities(explorerUtilities);
     }
-
 
     @Test
     public void boundsUnboundState() {
 
         Collection<Transition> transitions = new LinkedList<>();
         Map<ClassifiedState, Collection<Transition>> succs = new HashMap<>();
-        succs.put(buildState(1,2), transitions);
+        succs.put(buildState(1, 2), transitions);
 
-        ClassifiedState state = buildState(1,1);
+        ClassifiedState state = buildState(1, 1);
         when(explorerUtilities.getSuccessorsWithTransitions(state)).thenReturn(succs);
         Collection<ClassifiedState> actualSuccs = classifiedUtilities.getSuccessors(state);
         assertEquals(1, actualSuccs.size());
@@ -48,26 +47,24 @@ public class CoverabilityExplorerUtilitiesTest {
         assertEquals(expected, actual);
     }
 
-//    @Test
-//    public void boundedStatesHaveNoSelfSuccessors() {
-//        ClassifiedState bounded = buildState(1, 2, Integer.MAX_VALUE);
-//        Collection<ClassifiedState> actualSuccs = classifiedUtilities.getSuccessors(bounded);
-//        assertTrue(actualSuccs.isEmpty());
-//        verifyNoMoreInteractions(explorerUtilities);
-//    }
-
-
+    //    @Test
+    //    public void boundedStatesHaveNoSelfSuccessors() {
+    //        ClassifiedState bounded = buildState(1, 2, Integer.MAX_VALUE);
+    //        Collection<ClassifiedState> actualSuccs = classifiedUtilities.getSuccessors(bounded);
+    //        assertTrue(actualSuccs.isEmpty());
+    //        verifyNoMoreInteractions(explorerUtilities);
+    //    }
 
     /**
      * Builds a single token state with place counts
      * @param counts
      * @return
      */
-    ClassifiedState buildState(int...counts) {
+    ClassifiedState buildState(int... counts) {
         HashedStateBuilder stateBuilder = new HashedStateBuilder();
         int i = 0;
-        for(int count : counts) {
-            stateBuilder.placeWithToken("P"+i, "Default", count);
+        for (int count : counts) {
+            stateBuilder.placeWithToken("P" + i, "Default", count);
             i++;
         }
         return HashedClassifiedState.tangibleState(stateBuilder.build());

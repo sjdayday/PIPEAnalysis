@@ -45,9 +45,9 @@ public class MetricsStepDefinitions {
 
     private Map<Integer, ClassifiedState> stateMappings = new HashMap<>();
 
-
     @Given("^I use the Petri net located at (/[\\w/]+.xml)$")
-    public void I_Use_the_Petri_net_located_at(String path) throws JAXBException, UnparsableException, FileNotFoundException {
+    public void I_Use_the_Petri_net_located_at(String path)
+            throws JAXBException, UnparsableException, FileNotFoundException {
         petriNet = Utils.readPetriNet(path);
     }
 
@@ -68,8 +68,8 @@ public class MetricsStepDefinitions {
     @Then("^I expect the places to have the following average number of tokens")
     public void I_expect_the_places_to_have_the_following_average_number_of_tokens(String jsonValue)
             throws IOException {
-        Map<String, Map<String, Double>> averageTokens =
-                TokenMetrics.averageTokensOnPlace(stateMappings, probabilities);
+        Map<String, Map<String, Double>> averageTokens = TokenMetrics
+                .averageTokensOnPlace(stateMappings, probabilities);
         Map<String, Map<String, Double>> expectedTokens = jsonToMap(jsonValue);
         assertEqualityDoubleMap(expectedTokens, averageTokens);
 
@@ -86,7 +86,7 @@ public class MetricsStepDefinitions {
     }
 
     private void assertEqualityDoubleMap(Map<String, Map<String, Double>> expected,
-                                         Map<String, Map<String, Double>> actual) {
+            Map<String, Map<String, Double>> actual) {
         assertEquals("Place keys are not equal", expected.keySet(), actual.keySet());
         for (Map.Entry<String, Map<String, Double>> entry : expected.entrySet()) {
             Map<String, Double> actualMap = actual.get(entry.getKey());
@@ -100,8 +100,8 @@ public class MetricsStepDefinitions {
         assertEquals("Token keys are not equal", expected.keySet(), actual.keySet());
         for (Map.Entry<String, Double> entry : expected.entrySet()) {
 
-            assertEquals("Values for " + entry.getKey() + " are not equal ", entry.getValue(),
-                    actual.get(entry.getKey()), 0.0001);
+            assertEquals("Values for " + entry.getKey() + " are not equal ", entry.getValue(), actual
+                    .get(entry.getKey()), 0.0001);
 
         }
     }
@@ -114,6 +114,5 @@ public class MetricsStepDefinitions {
         assertEquality(expected, actual);
 
     }
-
 
 }

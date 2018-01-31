@@ -14,7 +14,8 @@ public final class TokenMetrics {
     /**
      * Private utility constructor
      */
-    private TokenMetrics() {}
+    private TokenMetrics() {
+    }
 
     /**
      *
@@ -30,7 +31,8 @@ public final class TokenMetrics {
      * @param steadyState steady state of the state space
      * @return the average number of tokens on each place
      */
-    public static  Map<String, Map<String, Double>> averageTokensOnPlace(Map<Integer, ClassifiedState> stateSpace, Map<Integer, Double> steadyState) {
+    public static Map<String, Map<String, Double>> averageTokensOnPlace(Map<Integer, ClassifiedState> stateSpace,
+            Map<Integer, Double> steadyState) {
         Map<String, Map<String, Double>> averages = new HashMap<>();
         for (Map.Entry<Integer, ClassifiedState> entry : stateSpace.entrySet()) {
             int id = entry.getKey();
@@ -42,14 +44,13 @@ public final class TokenMetrics {
                     Integer tokenCount = tokenEntry.getValue();
                     Double previous = tokenAverages.get(token);
                     double probability = tokenCount * steadyState.get(id);
-                    double newAverage = probability + (previous == null? 0 : previous);
+                    double newAverage = probability + (previous == null ? 0 : previous);
                     tokenAverages.put(token, newAverage);
                 }
             }
         }
         return averages;
     }
-
 
     /**
      *
@@ -61,7 +62,8 @@ public final class TokenMetrics {
      * @param place place id
      * @return the map token id -> count for the given place
      */
-    private static Map<String, Double> getTokenAverages( Map<String, Map<String, Double>> existingAverages, String place) {
+    private static Map<String, Double> getTokenAverages(Map<String, Map<String, Double>> existingAverages,
+            String place) {
         if (!existingAverages.containsKey(place)) {
             existingAverages.put(place, new HashMap<String, Double>());
         }

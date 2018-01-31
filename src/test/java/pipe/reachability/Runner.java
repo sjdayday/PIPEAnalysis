@@ -26,13 +26,14 @@ public class Runner {
 
     private static final int ONE_MILLION = 1_000_000;
     private static final int THREADS = 4;
+
     public static void main(String[] args)
             throws JAXBException, InterruptedException, ExecutionException, TimelessTrapException,
             IOException, InvalidRateException {
-//        run("/medium_complex_102400.xml");
-//        run("/medium_complex_286720.xml");
+        //        run("/medium_complex_102400.xml");
+        //        run("/medium_complex_286720.xml");
         PetriNet petriNet = Utils.readPetriNet("/261997.xml");
-//        processSequential(petriNet);
+        //        processSequential(petriNet);
         processParallel(petriNet, 100);
     }
 
@@ -44,31 +45,33 @@ public class Runner {
         Path transitions = Files.createTempFile("trans", ".tmp");
         Path state = Files.createTempFile("state", ".tmp");
         try (OutputStream transitionByteStream = Files.newOutputStream(transitions);
-             OutputStream stateByteStream = Files.newOutputStream(state)) {
-            try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
-                StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
+                OutputStream stateByteStream = Files.newOutputStream(state)) {
+            try (Output transitionOutputStream = new Output(transitionByteStream);
+                    Output stateOutputStream = new Output(stateByteStream)) {
+                StateProcessor processor = utils
+                        .getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
                 ExplorerUtilities explorerUtilities = new UnboundedExplorerUtilities(petriNet);
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
-                SequentialStateSpaceExplorer stateSpaceExplorer =
-                        new SequentialStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor);
+                SequentialStateSpaceExplorer stateSpaceExplorer = new SequentialStateSpaceExplorer(explorerUtilities,
+                        vanishingExplorer, processor);
 
                 explore(stateSpaceExplorer, explorerUtilities, " Sequential ");
             }
-//            try (InputStream transitionInputStream = Files.newInputStream(transitions);
-//                 InputStream stateStream = Files.newInputStream(state);
-//                 Input inputStream = new Input(transitionInputStream);
-//                 Input stateInputStream = new Input(stateStream)) {
-//                MultiStateReader reader = new EntireStateReader(kryoIo);
-//                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
-//                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
-//
-//
-//                GaussSeidelSolver solver = new GaussSeidelSolver();
-////                Map<Integer, Double> steadyState = solve(solver, records, "Gauss Seidel");
-//
-//
-//            }
+            //            try (InputStream transitionInputStream = Files.newInputStream(transitions);
+            //                 InputStream stateStream = Files.newInputStream(state);
+            //                 Input inputStream = new Input(transitionInputStream);
+            //                 Input stateInputStream = new Input(stateStream)) {
+            //                MultiStateReader reader = new EntireStateReader(kryoIo);
+            //                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
+            //                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
+            //
+            //
+            //                GaussSeidelSolver solver = new GaussSeidelSolver();
+            ////                Map<Integer, Double> steadyState = solve(solver, records, "Gauss Seidel");
+            //
+            //
+            //            }
         }
     }
 
@@ -80,35 +83,37 @@ public class Runner {
         Path transitions = Files.createTempFile("trans", ".tmp");
         Path state = Files.createTempFile("state", ".tmp");
         try (OutputStream transitionByteStream = Files.newOutputStream(transitions);
-             OutputStream stateByteStream = Files.newOutputStream(state)) {
-            try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
-                StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
+                OutputStream stateByteStream = Files.newOutputStream(state)) {
+            try (Output transitionOutputStream = new Output(transitionByteStream);
+                    Output stateOutputStream = new Output(stateByteStream)) {
+                StateProcessor processor = utils
+                        .getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
                 ExplorerUtilities explorerUtilities = new UnboundedExplorerUtilities(petriNet);
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
-                MassiveParallelStateSpaceExplorer stateSpaceExplorer =
-                        new MassiveParallelStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor, THREADS, statesPerThread);
+                MassiveParallelStateSpaceExplorer stateSpaceExplorer = new MassiveParallelStateSpaceExplorer(
+                        explorerUtilities, vanishingExplorer, processor, THREADS, statesPerThread);
 
                 explore(stateSpaceExplorer, explorerUtilities, " Parallel " + statesPerThread);
 
             }
-//            try (InputStream transitionInputStream = Files.newInputStream(transitions);
-//                 InputStream stateStream = Files.newInputStream(state);
-//                 Input inputStream = new Input(transitionInputStream);
-//                 Input stateInputStream = new Input(stateStream)) {
-//                MultiStateReader reader = new EntireStateReader(kryoIo);
-//                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
-//                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
-//
-//                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
-//                ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
-//                Map<Integer, Double> steadyState = solve(solver, records, "Parallel");
-//                System.out.println("----------------------");
-////                GaussSeidelSolver gaussSeidelSolver = new GaussSeidelSolver();
-////                solve(gaussSeidelSolver, records, "Gauss Seidel");
-//
-//
-//            }
+            //            try (InputStream transitionInputStream = Files.newInputStream(transitions);
+            //                 InputStream stateStream = Files.newInputStream(state);
+            //                 Input inputStream = new Input(transitionInputStream);
+            //                 Input stateInputStream = new Input(stateStream)) {
+            //                MultiStateReader reader = new EntireStateReader(kryoIo);
+            //                List<Record> records = new ArrayList<>(reader.readRecords(inputStream));
+            //                Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
+            //
+            //                SteadyStateBuilder builder = new SteadyStateBuilderImpl();
+            //                ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
+            //                Map<Integer, Double> steadyState = solve(solver, records, "Parallel");
+            //                System.out.println("----------------------");
+            ////                GaussSeidelSolver gaussSeidelSolver = new GaussSeidelSolver();
+            ////                solve(gaussSeidelSolver, records, "Gauss Seidel");
+            //
+            //
+            //            }
         }
 
     }
@@ -121,13 +126,13 @@ public class Runner {
         long duration = endTime - startTime;
         System.out.println("Solved steady state In time: " + duration);
 
-//        for (Map.Entry<Integer, Double> entry : steadyState.entrySet()) {
-//            System.out.println("State: " + entry.getKey() + " prob " + entry.getValue());
-//        }
+        //        for (Map.Entry<Integer, Double> entry : steadyState.entrySet()) {
+        //            System.out.println("State: " + entry.getKey() + " prob " + entry.getValue());
+        //        }
         return steadyState;
     }
 
-    private static void explore(StateSpaceExplorer explorer,  ExplorerUtilities explorerUtilities, String name)
+    private static void explore(StateSpaceExplorer explorer, ExplorerUtilities explorerUtilities, String name)
             throws InterruptedException, ExecutionException, IOException, TimelessTrapException, InvalidRateException {
         System.out.println("Starting " + name);
         System.out.println("========================");

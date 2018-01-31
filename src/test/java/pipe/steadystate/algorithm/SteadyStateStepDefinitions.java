@@ -52,9 +52,9 @@ public class SteadyStateStepDefinitions {
 
     private Map<ClassifiedState, Integer> stateMappings = new HashMap<>();
 
-
     @Given("^I use the Petri net located at (/[\\w/]+.xml)$")
-    public void I_Use_the_Petri_net_located_at(String path) throws JAXBException, UnparsableException, FileNotFoundException {
+    public void I_Use_the_Petri_net_located_at(String path)
+            throws JAXBException, UnparsableException, FileNotFoundException {
         petriNet = Utils.readPetriNet(path);
     }
 
@@ -63,7 +63,8 @@ public class SteadyStateStepDefinitions {
             throws InterruptedException, ExecutionException, IOException, InvalidRateException {
         try {
             TangibleOnlyUtils utils = new TangibleOnlyUtils();
-            Utils.StateSpaceResult result = Utils.performStateSpaceExplore(utils, new UnboundedExplorerUtilities(petriNet));
+            Utils.StateSpaceResult result = Utils
+                    .performStateSpaceExplore(utils, new UnboundedExplorerUtilities(petriNet));
             List<Record> records = new ArrayList<>(result.results);
             for (Map.Entry<Integer, ClassifiedState> entry : result.states.entrySet()) {
                 stateMappings.put(entry.getValue(), entry.getKey());

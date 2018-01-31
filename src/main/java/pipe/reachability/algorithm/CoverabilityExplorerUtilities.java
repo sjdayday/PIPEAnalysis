@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutionException;
  */
 public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
 
-
     /**
      * Reachability graph explorer utilities
      */
@@ -71,7 +70,7 @@ public final class CoverabilityExplorerUtilities implements ExplorerUtilities {
      * @return boundedSuccessors map of classified states and bounded successors
      */
     private Map<ClassifiedState, Collection<Transition>> boundSuccessors(ClassifiedState state,
-    			Map<ClassifiedState, Collection<Transition>> successors) {
+            Map<ClassifiedState, Collection<Transition>> successors) {
         Map<ClassifiedState, Collection<Transition>> boundedSuccessors = new HashMap<>();
         for (Map.Entry<ClassifiedState, Collection<Transition>> entry : successors.entrySet()) {
             ClassifiedState successor = entry.getKey();

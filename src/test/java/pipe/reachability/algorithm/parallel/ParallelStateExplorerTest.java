@@ -87,7 +87,6 @@ public class ParallelStateExplorerTest {
         assertEquals(5.0, results.get(successor), 0.001);
     }
 
-
     @Test
     public void vanishingRatesAdded() throws TimelessTrapException, InvalidRateException {
         ClassifiedState successor = mock(ClassifiedState.class);
@@ -105,8 +104,6 @@ public class ParallelStateExplorerTest {
         assertEquals(1, results.size());
         assertEquals(2.5, results.get(vanishingSuccessor), 0.001);
     }
-
-
 
     @Test
     public void sumsVanishingRatesForSameState() throws TimelessTrapException, InvalidRateException {

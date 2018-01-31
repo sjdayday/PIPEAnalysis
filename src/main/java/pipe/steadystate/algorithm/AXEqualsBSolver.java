@@ -24,7 +24,6 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      */
     private static final Logger LOGGER = Logger.getLogger(AXEqualsBSolver.class.getName());
 
-
     protected Map<Integer, Integer> stateToIndex = new HashMap<>();
 
     /**
@@ -60,7 +59,8 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @param diagonals
      * @return the solved equation
      */
-    private Map<Integer,Double> timeAndSolve(Map<Integer, Map<Integer, Double>> QTranspose, Map<Integer, Double> diagonals) {
+    private Map<Integer, Double> timeAndSolve(Map<Integer, Map<Integer, Double>> QTranspose,
+            Map<Integer, Double> diagonals) {
         long startTime = System.nanoTime();
         List<Double> results = solve(QTranspose, diagonals);
         long finishTime = System.nanoTime();
@@ -69,7 +69,6 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         LOGGER.log(Level.INFO, "Steady state solved in " + duration);
         return x;
     }
-
 
     /**
      * Normalizes x by dividing every value in it by its total sum
@@ -88,13 +87,12 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
             if (sum == 0) {
                 normalized.put(state, x.get(index));
             } else {
-                normalized.put(state, x.get(index)/sum);
+                normalized.put(state, x.get(index) / sum);
             }
 
         }
         return normalized;
     }
-
 
     /**
      * Abstract method which delegates solving to subclasses who solve in the form Ax = b
@@ -103,8 +101,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @return solved steady state
      */
     protected abstract List<Double> solve(Map<Integer, Map<Integer, Double>> records,
-                                                  Map<Integer, Double> diagonalElements);
-
+            Map<Integer, Double> diagonalElements);
 
     /**
      * Performs row sums of successors and optionally ignores a self loop successor
@@ -159,7 +156,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @return true if every value for x has converged
      */
     protected final boolean hasConverged(Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonals,
-                                         List<Double> x) {
+            List<Double> x) {
         for (Map.Entry<Integer, Map<Integer, Double>> entry : records.entrySet()) {
             int state = entry.getKey();
             double rowValue = multiplyAndSum(entry.getValue(), x);
@@ -171,7 +168,6 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         }
         return isPlausible(x);
     }
-
 
     /**
      * Checks to see if gauss seidel has converged. That is if Ax &lt; EPSILON
@@ -188,7 +184,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @return true if every value for x has converged
      */
     protected final boolean hasConverged(Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonals,
-                                         AtomicReferenceArray<Double> x) {
+            AtomicReferenceArray<Double> x) {
         for (Map.Entry<Integer, Map<Integer, Double>> entry : records.entrySet()) {
             int state = entry.getKey();
             double rowValue = multiplyAndSum(entry.getValue(), x);
@@ -200,7 +196,6 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         }
         return isPlausible(x);
     }
-
 
     /**
      * Calculates if x is plausible for the steady state, that is every value of x
@@ -235,7 +230,6 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         return true;
     }
 
-
     /**
      * Performs a row calculation of the Gauss Seidel method
      *
@@ -253,6 +247,7 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         double rowSum = multiplyAndSum(row, x);
         return -rowSum / aii;
     }
+
     /**
      * Performs a row calculation of the Gauss Seidel method
      *
@@ -262,7 +257,8 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
      * @param x     current x values
      * @return the value that should be entered in x for the state held by the record
      */
-    protected final double getRowValue(Integer state, Map<Integer, Double> row, double aii, AtomicReferenceArray<Double> x) {
+    protected final double getRowValue(Integer state, Map<Integer, Double> row, double aii,
+            AtomicReferenceArray<Double> x) {
         if (aii == 0) {
             return x.get(state);
         }
@@ -270,7 +266,6 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         double rowSum = multiplyAndSum(row, x);
         return -rowSum / aii;
     }
-
 
     /**
      *
@@ -289,6 +284,5 @@ public abstract class AXEqualsBSolver extends AbstractSteadyStateSolver {
         }
         return x;
     }
-
 
 }

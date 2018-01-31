@@ -54,7 +54,6 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
         return transpose;
     }
 
-
     /**
      * Searches for the largest absolute diagonal and then returns q the dividor in
      * turning a CTMC matrix A, into a DTMC matrix Q using
@@ -77,7 +76,6 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
         }
         return largest + 2;
     }
-
 
     /**
      *
@@ -108,7 +106,7 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
         KryoStateIO io = new KryoStateIO();
         Path p = Paths.get(this.getClass().getResource(path).toURI());
         try (InputStream fileStream = Files.newInputStream(p);
-             Input inputStream = new Input(fileStream)) {
+                Input inputStream = new Input(fileStream)) {
             MultiStateReader reader = new EntireStateReader(io);
             return new ArrayList<>(reader.readRecords(inputStream));
         }
@@ -129,12 +127,11 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
             normalized.putAll(x);
         } else {
             for (Map.Entry<Integer, Double> entry : x.entrySet()) {
-                normalized.put(entry.getKey(), entry.getValue()/sum);
+                normalized.put(entry.getKey(), entry.getValue() / sum);
             }
         }
         return normalized;
     }
-
 
     /**
      *
@@ -170,7 +167,6 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
         return sum;
     }
 
-
     /**
      * The diagonal elements of the A matrix are those where an element maps
      * to itself, since no self loops are allowed.
@@ -194,7 +190,6 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
         }
         return diagonals;
     }
-
 
     /**
      * Divdes every value in matrix A by a
@@ -224,6 +219,5 @@ public abstract class AbstractSteadyStateSolver implements SteadyStateSolver {
         }
         return divided;
     }
-
 
 }

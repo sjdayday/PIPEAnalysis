@@ -18,7 +18,6 @@ import java.util.logging.Logger;
  */
 public final class SequentialStateSpaceExplorer extends AbstractStateSpaceExplorer {
 
-
     private static final Logger LOGGER = Logger.getLogger(SequentialStateSpaceExplorer.class.getName());
 
     /**
@@ -30,7 +29,7 @@ public final class SequentialStateSpaceExplorer extends AbstractStateSpaceExplor
      * @param stateProcessor processor for actually writing out the results
      */
     public SequentialStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
-                                        StateProcessor stateProcessor) {
+            StateProcessor stateProcessor) {
         super(explorerUtilities, vanishingExplorer, stateProcessor);
     }
 

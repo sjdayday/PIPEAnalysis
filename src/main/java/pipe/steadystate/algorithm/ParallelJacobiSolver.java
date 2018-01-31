@@ -21,7 +21,6 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
      */
     private static final Logger LOGGER = Logger.getLogger(ParallelJacobiSolver.class.getName());
 
-
     /**
      * Number of threads to run in parallel on the CPU
      */
@@ -32,7 +31,6 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
      */
     private final ExecutorService executorService;
 
-
     /**
      * If bounded = true this is the maximum number of iterations the solver is allowed
      */
@@ -42,8 +40,6 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
      * If this value is true then a maximum number of iterations is imposed on the solver
      */
     private boolean bounded = false;
-
-
 
     /**
      * @param threads         Number of threads Jacobi should be solved with for each
@@ -69,7 +65,6 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
         bounded = true;
     }
 
-
     /**
      * Solves the matrix via a parallel jacobi. The submitted tasks of each iteration each perform the new
      * calculation of x_i for a specified number of rows.
@@ -82,26 +77,25 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
      */
     @Override
     protected List<Double> solve(Map<Integer, Map<Integer, Double>> records,
-                                         Map<Integer, Double> diagonalElements) {
+            Map<Integer, Double> diagonalElements) {
         ParallelSubmitter submitter = getSubmitter();
-        List<Double> x =
-                submitter.solve(threads, executorService, initialiseXWithGuessList(records), records, diagonalElements,
-                        new ParallelSubmitter.ParallelUtils() {
-                            @Override
-                            public boolean isConverged(List<Double> previousX, AtomicReferenceArray<Double> x,
-                                                       Map<Integer, Map<Integer, Double>> records,
-                                                       Map<Integer, Double> diagonalElements) {
-                                return hasConverged(records, diagonalElements, x);
-                            }
+        List<Double> x = submitter
+                .solve(threads, executorService, initialiseXWithGuessList(records), records, diagonalElements, new ParallelSubmitter.ParallelUtils() {
+                    @Override
+                    public boolean isConverged(List<Double> previousX, AtomicReferenceArray<Double> x,
+                            Map<Integer, Map<Integer, Double>> records,
+                            Map<Integer, Double> diagonalElements) {
+                        return hasConverged(records, diagonalElements, x);
+                    }
 
-                            @Override
-                            public Runnable createRunnable(int from, int to, CountDownLatch latch,
-                                                          List<Double> previousX, AtomicReferenceArray<Double> x,
-                                                           Map<Integer, Map<Integer, Double>> records,
-                                                           Map<Integer, Double> diagonalElements) {
-                                return new ParallelSolver(from, to, latch, previousX, records, x, diagonalElements);
-                            }
-                        });
+                    @Override
+                    public Runnable createRunnable(int from, int to, CountDownLatch latch,
+                            List<Double> previousX, AtomicReferenceArray<Double> x,
+                            Map<Integer, Map<Integer, Double>> records,
+                            Map<Integer, Double> diagonalElements) {
+                        return new ParallelSolver(from, to, latch, previousX, records, x, diagonalElements);
+                    }
+                });
 
         return x;
     }
@@ -167,8 +161,8 @@ class ParallelJacobiSolver extends AXEqualsBSolver {
          * @param diagonalElements
          */
         private ParallelSolver(int from, int to, CountDownLatch latch, List<Double> previous,
-                               Map<Integer, Map<Integer, Double>> records, AtomicReferenceArray<Double> x,
-                               Map<Integer, Double> diagonalElements) {
+                Map<Integer, Map<Integer, Double>> records, AtomicReferenceArray<Double> x,
+                Map<Integer, Double> diagonalElements) {
             this.previous = previous;
             this.records = records;
             this.latch = latch;

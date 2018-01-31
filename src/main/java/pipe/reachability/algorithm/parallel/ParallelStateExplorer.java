@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
-
 /**
  * Callable worker that is given a state to explore and calculates the successors
  * of the state.
@@ -44,7 +43,7 @@ public final class ParallelStateExplorer implements Callable<Map<ClassifiedState
     private final VanishingExplorer vanishingExplorer;
 
     public ParallelStateExplorer(CountDownLatch latch, ClassifiedState state, ExplorerUtilities explorerUtilities,
-                                 VanishingExplorer vanishingExplorer) {
+            VanishingExplorer vanishingExplorer) {
 
         this.latch = latch;
         this.state = state;

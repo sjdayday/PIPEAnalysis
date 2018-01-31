@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 class SequentialJacobiSolver extends AXEqualsBSolver {
     private static final Logger LOGGER = Logger.getLogger(GaussSeidelSolver.class.getName());
 
-
     /**
      * If bounded = true this is the maximum number of iterations the solver is allowed
      */
@@ -20,13 +19,13 @@ class SequentialJacobiSolver extends AXEqualsBSolver {
      */
     private boolean bounded = false;
 
-
     /**
      * Unbounded constructor
      */
     public SequentialJacobiSolver() {
         maxIterations = 0;
     }
+
     /**
      * Bounded constructor
      * @param maxIterations maximum number of iterations allowed
@@ -35,7 +34,6 @@ class SequentialJacobiSolver extends AXEqualsBSolver {
         this.maxIterations = maxIterations;
         bounded = true;
     }
-
 
     /**
      * Solves Ax = b where b is all zeros in the case of steady state.
@@ -48,13 +46,13 @@ class SequentialJacobiSolver extends AXEqualsBSolver {
      */
     @Override
     protected List<Double> solve(Map<Integer, Map<Integer, Double>> records,
-                                         Map<Integer, Double> diagonalElements) {
+            Map<Integer, Double> diagonalElements) {
 
         List<Double> x = initialiseXWithGuessList(records);
         List<Double> previous = new ArrayList<>(x);
         boolean converged = false;
         int iterations = 0;
-        while(!converged && canContinue(iterations)) {
+        while (!converged && canContinue(iterations)) {
             for (Map.Entry<Integer, Map<Integer, Double>> entry : records.entrySet()) {
                 Integer state = entry.getKey();
                 double aii = diagonalElements.get(state);

@@ -79,7 +79,7 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
     private int processedCount = 0;
 
     public AbstractStateSpaceExplorer(ExplorerUtilities explorerUtilities, VanishingExplorer vanishingExplorer,
-                                      StateProcessor stateProcessor) {
+            StateProcessor stateProcessor) {
         this.explorerUtilities = explorerUtilities;
         this.vanishingExplorer = vanishingExplorer;
         this.stateProcessor = stateProcessor;
@@ -108,7 +108,6 @@ public abstract class AbstractStateSpaceExplorer implements StateSpaceExplorer {
         return new StateSpaceExplorerResults(processedCount, stateCount);
 
     }
-
 
     /**
      * Populates tangibleQueue with all starting tangible states.

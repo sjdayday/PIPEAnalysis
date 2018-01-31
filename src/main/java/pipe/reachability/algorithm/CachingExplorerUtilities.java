@@ -36,7 +36,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      */
     private final AnimationLogic animationLogic;
 
-
     /**
      * Cached successors is used when exploring states to quickly determine
      * a states successors it has already seen before.
@@ -44,8 +43,7 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
      * It will be most useful when exploring cyclic transitions
      * </p>
      */
-    private Map<ClassifiedState, Map<ClassifiedState, Collection<Transition>>> cachedSuccessors =
-            new ConcurrentHashMap<>();
+    private Map<ClassifiedState, Map<ClassifiedState, Collection<Transition>>> cachedSuccessors = new ConcurrentHashMap<>();
 
     /**
      * Takes a copy of the Petri net to use for state space exploration so
@@ -74,7 +72,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
         if (cachedSuccessors.containsKey(state)) {
             return cachedSuccessors.get(state);
         }
-
 
         Map<State, Collection<Transition>> successors = animationLogic.getSuccessors(state);
         Map<ClassifiedState, Collection<Transition>> classifiedSuccessors = new HashMap<>();
@@ -109,7 +106,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
         Collection<Transition> transitionsToSuccessor = getTransitions(state, successor);
         return getWeightOfTransitions(state, transitionsToSuccessor);
     }
-
 
     /**
      * Creates a new state containing the token counts for the
@@ -185,7 +181,6 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
         return new LinkedList<>();
     }
 
-
     /**
      * Sums up the weights of the transitions. Transitions may have functional rates
      *
@@ -206,8 +201,8 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
                 weight += results.getResult();
             } else {
                 throw new InvalidRateException(
-                        "Invalid functional expression observed for transition : " + transition.getId() + " "
-                                + transition.getRateExpr());
+                        "Invalid functional expression observed for transition : " + transition.getId() + " " +
+                                transition.getRateExpr());
             }
         }
         return weight;
@@ -234,6 +229,5 @@ public abstract class CachingExplorerUtilities implements ExplorerUtilities {
         cachedSuccessors.clear();
         animationLogic.clear();
     }
-
 
 }

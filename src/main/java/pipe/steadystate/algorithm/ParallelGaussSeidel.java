@@ -22,7 +22,6 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
      */
     private static final Logger LOGGER = Logger.getLogger(ParallelJacobiSolver.class.getName());
 
-
     /**
      * Number of threads to run in parallel on the CPU
      */
@@ -50,7 +49,6 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
         this.subIterations = subIterations;
     }
 
-
     /**
      * Solves the matrix via a parallel jacobi. The submitted tasks of each iteration each perform the new
      * calculation of x_i for a specified number of rows.
@@ -63,7 +61,7 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
      */
     @Override
     protected List<Double> solve(Map<Integer, Map<Integer, Double>> records,
-                                         Map<Integer, Double> diagonalElements) {
+            Map<Integer, Double> diagonalElements) {
         List<Double> firstGuess = initialiseXWithGuessList(records);
         AtomicReferenceArray<Double> x = new AtomicReferenceArray<>(firstGuess.toArray(new Double[firstGuess.size()]));
         boolean converged = false;
@@ -95,14 +93,15 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
      * threads then each thread will solve 4 rows. If x is a 10x10 matrix and there are 3 threads then
      * two threads will solve 3 rows and one thread wills solve 4 rows.
      * @param threads for task processing
-     * @param records matrix 
+     * @param records matrix
      * @param diagonalElements diagonals
      * @param executorService
-     * @param x list 
-     * @return latch 
+     * @param x list
+     * @return latch
      */
-    private CountDownLatch submitTasks(int threads, Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements,
-                                       ExecutorService executorService, AtomicReferenceArray<Double> x) {
+    private CountDownLatch submitTasks(int threads, Map<Integer, Map<Integer, Double>> records,
+            Map<Integer, Double> diagonalElements,
+            ExecutorService executorService, AtomicReferenceArray<Double> x) {
 
         int scheduledThreads = x.length() < threads ? x.length() : threads;
         int split = x.length() / scheduledThreads;
@@ -110,7 +109,7 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
 
         CountDownLatch latch = new CountDownLatch(scheduledThreads);
         //TODO: THis wont do the last one, so we want inclusive too?
-        int from  = 0;
+        int from = 0;
         for (int thread = 0; thread < scheduledThreads; thread++) {
             int to = from + split - 1 + (remaining > 0 ? 1 : 0);
             if (remaining > 0) {
@@ -127,13 +126,14 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
      * @param from start
      * @param to  end
      * @param latch to use
-     * @param x list 
+     * @param x list
      * @param records matrix
      * @param diagonalElements diagonals
      * @return initialized worker thread
      */
-    public Runnable createRunnable(int from, int to, CountDownLatch latch, AtomicReferenceArray<Double> x, Map<Integer, Map<Integer, Double>> records,
-                                   Map<Integer, Double> diagonalElements) {
+    public Runnable createRunnable(int from, int to, CountDownLatch latch, AtomicReferenceArray<Double> x,
+            Map<Integer, Map<Integer, Double>> records,
+            Map<Integer, Double> diagonalElements) {
         return new ParallelSolver(from, to, latch, records, x, diagonalElements);
     }
 
@@ -174,15 +174,16 @@ public class ParallelGaussSeidel extends AXEqualsBSolver {
 
         /**
          * Initialises this task with the information it needs
-	     * @param from start
-	     * @param to  end
-	     * @param latch to use
-	     * @param x list 
-	     * @param records matrix
-	     * @param diagonalElements diagonals
+         * @param from start
+         * @param to  end
+         * @param latch to use
+         * @param x list
+         * @param records matrix
+         * @param diagonalElements diagonals
          */
-        private ParallelSolver(int from, int to, CountDownLatch latch, Map<Integer, Map<Integer, Double>> records, AtomicReferenceArray<Double> x,
-                               Map<Integer, Double> diagonalElements) {
+        private ParallelSolver(int from, int to, CountDownLatch latch, Map<Integer, Map<Integer, Double>> records,
+                AtomicReferenceArray<Double> x,
+                Map<Integer, Double> diagonalElements) {
             this.records = records;
             this.latch = latch;
             this.x = x;

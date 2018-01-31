@@ -1,6 +1,5 @@
 package utils;
 
-
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import pipe.reachability.StateExplorerUtils;
@@ -47,24 +46,29 @@ public class Utils {
         return Utils.class.getResource(path).getPath();
     }
 
-    public static StateSpaceResult performStateSpaceExplore(StateExplorerUtils utils, ExplorerUtilities explorerUtilities)
+    public static StateSpaceResult performStateSpaceExplore(StateExplorerUtils utils,
+            ExplorerUtilities explorerUtilities)
             throws IOException, ExecutionException, InterruptedException, TimelessTrapException, InvalidRateException {
         KryoStateIO kryoIo = new KryoStateIO();
         int processedTransitons = 0;
         try (ByteArrayOutputStream transitionByteStream = new ByteArrayOutputStream();
-             ByteArrayOutputStream stateByteStream = new ByteArrayOutputStream()) {
-            try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
-                StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
+                ByteArrayOutputStream stateByteStream = new ByteArrayOutputStream()) {
+            try (Output transitionOutputStream = new Output(transitionByteStream);
+                    Output stateOutputStream = new Output(stateByteStream)) {
+                StateProcessor processor = utils
+                        .getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
-                StateSpaceExplorer stateSpaceExplorer =
-                        new SequentialStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor);
-                processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState()).processedTransitions;
+                StateSpaceExplorer stateSpaceExplorer = new SequentialStateSpaceExplorer(explorerUtilities,
+                        vanishingExplorer, processor);
+                processedTransitons = stateSpaceExplorer
+                        .generate(explorerUtilities.getCurrentState()).processedTransitions;
             }
-            try (ByteArrayInputStream transitionInputStream = new ByteArrayInputStream(transitionByteStream.toByteArray());
-                 ByteArrayInputStream stateStream = new ByteArrayInputStream(stateByteStream.toByteArray());
-                 Input inputStream = new Input(transitionInputStream);
-                 Input stateInputStream = new Input(stateStream)) {
+            try (ByteArrayInputStream transitionInputStream = new ByteArrayInputStream(
+                    transitionByteStream.toByteArray());
+                    ByteArrayInputStream stateStream = new ByteArrayInputStream(stateByteStream.toByteArray());
+                    Input inputStream = new Input(transitionInputStream);
+                    Input stateInputStream = new Input(stateStream)) {
                 MultiStateReader reader = new EntireStateReader(kryoIo);
                 Collection<Record> records = reader.readRecords(inputStream);
                 Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
@@ -73,24 +77,29 @@ public class Utils {
         }
     }
 
-    public static StateSpaceResult performParallelStateSpaceExplore(StateExplorerUtils utils, ExplorerUtilities explorerUtilities)
+    public static StateSpaceResult performParallelStateSpaceExplore(StateExplorerUtils utils,
+            ExplorerUtilities explorerUtilities)
             throws IOException, ExecutionException, InterruptedException, TimelessTrapException, InvalidRateException {
         KryoStateIO kryoIo = new KryoStateIO();
         int processedTransitons = 0;
         try (ByteArrayOutputStream transitionByteStream = new ByteArrayOutputStream();
-             ByteArrayOutputStream stateByteStream = new ByteArrayOutputStream()) {
-            try (Output transitionOutputStream = new Output(transitionByteStream); Output stateOutputStream = new Output(stateByteStream)) {
-                StateProcessor processor = utils.getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
+                ByteArrayOutputStream stateByteStream = new ByteArrayOutputStream()) {
+            try (Output transitionOutputStream = new Output(transitionByteStream);
+                    Output stateOutputStream = new Output(stateByteStream)) {
+                StateProcessor processor = utils
+                        .getTangibleStateExplorer(kryoIo, transitionOutputStream, stateOutputStream);
                 VanishingExplorer vanishingExplorer = utils.getVanishingExplorer(explorerUtilities);
 
-                StateSpaceExplorer stateSpaceExplorer =
-                        new MassiveParallelStateSpaceExplorer(explorerUtilities, vanishingExplorer, processor, THREADS, 5);
-                processedTransitons = stateSpaceExplorer.generate(explorerUtilities.getCurrentState()).processedTransitions;
+                StateSpaceExplorer stateSpaceExplorer = new MassiveParallelStateSpaceExplorer(explorerUtilities,
+                        vanishingExplorer, processor, THREADS, 5);
+                processedTransitons = stateSpaceExplorer
+                        .generate(explorerUtilities.getCurrentState()).processedTransitions;
             }
-            try (ByteArrayInputStream transitionInputStream = new ByteArrayInputStream(transitionByteStream.toByteArray());
-                 ByteArrayInputStream stateStream = new ByteArrayInputStream(stateByteStream.toByteArray());
-                 Input inputStream = new Input(transitionInputStream);
-                 Input stateInputStream = new Input(stateStream)) {
+            try (ByteArrayInputStream transitionInputStream = new ByteArrayInputStream(
+                    transitionByteStream.toByteArray());
+                    ByteArrayInputStream stateStream = new ByteArrayInputStream(stateByteStream.toByteArray());
+                    Input inputStream = new Input(transitionInputStream);
+                    Input stateInputStream = new Input(stateStream)) {
                 MultiStateReader reader = new EntireStateReader(kryoIo);
                 Collection<Record> records = reader.readRecords(inputStream);
                 Map<Integer, ClassifiedState> mappings = reader.readStates(stateInputStream);
@@ -101,7 +110,7 @@ public class Utils {
 
     public static class StateSpaceResult {
         public StateSpaceResult(Collection<Record> results, int processedTransitions,
-                                Map<Integer, ClassifiedState> states) {
+                Map<Integer, ClassifiedState> states) {
             this.results = results;
             this.processedTransitions = processedTransitions;
             this.states = states;

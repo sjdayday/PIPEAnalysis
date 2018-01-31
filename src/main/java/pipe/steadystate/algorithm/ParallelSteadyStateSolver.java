@@ -35,13 +35,12 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
      */
     private final SteadyStateBuilder builder;
 
-	private boolean waitForAllSolversForTesting;
+    private boolean waitForAllSolversForTesting;
 
     /**
      * Class logger
      */
     private static final Logger LOGGER = Logger.getLogger(ParallelSteadyStateSolver.class.getName());
-
 
     /**
      * Constructor
@@ -76,7 +75,7 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
                 return solveWithJacobi(records, executorService);
             }
             return solveWithJacobiAndGS(records, executorService);
-        }   finally{
+        } finally {
             executorService.shutdownNow();
         }
     }
@@ -96,39 +95,36 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         }
 
         SteadyStateSolver jacobiSolver = builder.buildJacobi(executorService, threads - 1);
-        CompletionService<Map<Integer, Double>> completionService =
-                new ExecutorCompletionService<>(executorService);
+        CompletionService<Map<Integer, Double>> completionService = new ExecutorCompletionService<>(executorService);
         List<Future<Map<Integer, Double>>> futures = submit(completionService, records, gsSolver, jacobiSolver);
         try {
-//            return completionService.take().get();
-        	return getFirstCompletedFuture(completionService, futures); 
-        } catch (InterruptedException | ExecutionException e ) {
+            //            return completionService.take().get();
+            return getFirstCompletedFuture(completionService, futures);
+        } catch (InterruptedException | ExecutionException e) {
             LOGGER.log(Level.SEVERE, e.getMessage());
             return new HashMap<>();
-        }
-        finally {
-            for(Future<Map<Integer, Double>> future : futures) {
-               future.cancel(true);
+        } finally {
+            for (Future<Map<Integer, Double>> future : futures) {
+                future.cancel(true);
             }
         }
     }
 
-	protected Map<Integer, Double> getFirstCompletedFuture(
-			CompletionService<Map<Integer, Double>> completionService,
-			List<Future<Map<Integer, Double>>> futures)
-			throws InterruptedException, ExecutionException {
-		
-		if (!waitForAllSolversForTesting) {
+    protected Map<Integer, Double> getFirstCompletedFuture(
+            CompletionService<Map<Integer, Double>> completionService,
+            List<Future<Map<Integer, Double>>> futures)
+            throws InterruptedException, ExecutionException {
+
+        if (!waitForAllSolversForTesting) {
             return completionService.take().get();
-		} 
-		else {
-			List<Future<Map<Integer, Double>>> futureResults = new ArrayList<>();  
-			for (int i = 0; i < futures.size(); i++) {
-				futureResults.add(completionService.poll(1000, TimeUnit.MILLISECONDS)); 
-			}
-			return futureResults.get(0).get();
-		}
-	}
+        } else {
+            List<Future<Map<Integer, Double>>> futureResults = new ArrayList<>();
+            for (int i = 0; i < futures.size(); i++) {
+                futureResults.add(completionService.poll(1000, TimeUnit.MILLISECONDS));
+            }
+            return futureResults.get(0).get();
+        }
+    }
 
     /**
      * Solves the steady state entirely with jacobi
@@ -148,7 +144,7 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
      * @return true if diagonally dominant
      */
     private boolean isDiagonallyDominant(Map<Integer, Map<Integer, Double>> records,
-                                         Map<Integer, Double> diagonalElements) {
+            Map<Integer, Double> diagonalElements) {
         for (Map.Entry<Integer, Map<Integer, Double>> entry : records.entrySet()) {
             double rowSum = getAbsRowSum(entry);
             double a_ii = diagonalElements.get(entry.getKey());
@@ -170,7 +166,7 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
      * @return futures that are now running
      */
     private List<Future<Map<Integer, Double>>> submit(CompletionService<Map<Integer, Double>> completionService,
-                                                      List<Record> records, SteadyStateSolver... solvers) {
+            List<Record> records, SteadyStateSolver... solvers) {
         List<Future<Map<Integer, Double>>> futures = new ArrayList<>();
         for (SteadyStateSolver solver : solvers) {
             futures.add(completionService.submit(new CallableSteadyStateSolver(solver, records)));
@@ -211,7 +207,7 @@ public final class ParallelSteadyStateSolver extends AbstractSteadyStateSolver {
         }
     }
 
-	protected void waitForAllSolversForTesting(boolean waitForAllSolversForTesting) {
-		this.waitForAllSolversForTesting = waitForAllSolversForTesting; 
-	}
+    protected void waitForAllSolversForTesting(boolean waitForAllSolversForTesting) {
+        this.waitForAllSolversForTesting = waitForAllSolversForTesting;
+    }
 }

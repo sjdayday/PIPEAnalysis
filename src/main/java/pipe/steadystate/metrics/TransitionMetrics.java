@@ -19,11 +19,13 @@ public final class TransitionMetrics {
     /**
      * Private constructor of utility class
      */
-    private TransitionMetrics() {}
+    private TransitionMetrics() {
+    }
 
-    public static Map<String, Double> getTransitionThroughput(Map<Integer, ClassifiedState> stateSpace, Map<Integer, Double> steadyState, PetriNet petriNet) {
-    	ExecutablePetriNet executablePetriNet = petriNet.getExecutablePetriNet(); 
-    	AnimationLogic animationLogic = new PetriNetAnimationLogic(executablePetriNet);
+    public static Map<String, Double> getTransitionThroughput(Map<Integer, ClassifiedState> stateSpace,
+            Map<Integer, Double> steadyState, PetriNet petriNet) {
+        ExecutablePetriNet executablePetriNet = petriNet.getExecutablePetriNet();
+        AnimationLogic animationLogic = new PetriNetAnimationLogic(executablePetriNet);
         Map<String, Double> throughputs = new HashMap<>();
         for (Map.Entry<Integer, ClassifiedState> entry : stateSpace.entrySet()) {
             int id = entry.getKey();

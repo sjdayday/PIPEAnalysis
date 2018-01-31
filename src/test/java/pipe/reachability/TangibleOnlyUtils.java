@@ -8,10 +8,10 @@ import uk.ac.imperial.io.StateIOProcessor;
 import uk.ac.imperial.io.StateProcessor;
 import uk.ac.imperial.io.StateWriter;
 
-
 public class TangibleOnlyUtils implements StateExplorerUtils {
     @Override
-    public StateProcessor getTangibleStateExplorer(StateWriter stateWriter,Output transitionStream, Output stateStream) {
+    public StateProcessor getTangibleStateExplorer(StateWriter stateWriter, Output transitionStream,
+            Output stateStream) {
         return new StateIOProcessor(stateWriter, transitionStream, stateStream);
     }
 

@@ -45,7 +45,6 @@ public interface SteadyStateBuilder {
      */
     SteadyStateSolver buildBoundedParallelJacobiSolver(ExecutorService executorService, int threads, int maxIterations);
 
-
     /**
      *
      * @param executorService executor service for submitting tasks

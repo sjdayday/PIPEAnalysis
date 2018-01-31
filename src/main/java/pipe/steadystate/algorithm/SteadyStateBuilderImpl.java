@@ -54,7 +54,7 @@ public final class SteadyStateBuilderImpl implements SteadyStateBuilder
      */
     @Override
     public SteadyStateSolver buildBoundedParallelJacobiSolver(ExecutorService executorService, int threads,
-                                                              int maxIterations) {
+            int maxIterations) {
         return new ParallelJacobiSolver(threads, executorService, maxIterations);
     }
 
@@ -66,7 +66,8 @@ public final class SteadyStateBuilderImpl implements SteadyStateBuilder
      * @return asynchronous Gauss-Seidel implementation
      */
     @Override
-    public SteadyStateSolver buildAsynchronousGaussSeidel(ExecutorService executorService, int threads, int subIterations) {
+    public SteadyStateSolver buildAsynchronousGaussSeidel(ExecutorService executorService, int threads,
+            int subIterations) {
         return new ParallelGaussSeidel(threads, executorService, subIterations);
     }
 }

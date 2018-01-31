@@ -21,7 +21,6 @@ public interface ExplorerUtilities {
      */
     Map<ClassifiedState, Collection<Transition>> getSuccessorsWithTransitions(ClassifiedState state);
 
-
     /**
      *
      * Finds successors of the given state. A successor is a state that occurs
@@ -31,8 +30,6 @@ public interface ExplorerUtilities {
      * @return map of successor states to the transitions that caused them
      */
     Collection<ClassifiedState> getSuccessors(ClassifiedState state);
-
-
 
     /**
      * Calculates the rate of a  transition from a tangible state to the successor state.
@@ -82,8 +79,6 @@ public interface ExplorerUtilities {
      * @throws InvalidRateException functional rate expression invalid
      */
     double getWeightOfTransitions(ClassifiedState state, Iterable<Transition> transitions) throws InvalidRateException;
-
-
 
     /**
      *

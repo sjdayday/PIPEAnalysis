@@ -30,17 +30,14 @@ public class BoundedExplorerUtilitiesTest {
         assertTrue(utilities.canExploreMore(MAX_EXPLORE - 5));
     }
 
-
     @Test
     public void canExploreIfEqualToMax() {
         assertTrue(utilities.canExploreMore(MAX_EXPLORE));
     }
 
-
     @Test
     public void cannotExploreIfAboveMax() {
         assertFalse(utilities.canExploreMore(MAX_EXPLORE + 10));
     }
-
 
 }

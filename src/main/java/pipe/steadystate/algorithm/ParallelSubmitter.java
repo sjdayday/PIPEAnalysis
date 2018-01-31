@@ -59,8 +59,9 @@ class ParallelSubmitter {
      * @param utils
      * @return unnormalized x.
      */
-    public List<Double> solve(int threads, ExecutorService executorService, List<Double> firstGuess, Map<Integer, Map<Integer, Double>> records,
-                    Map<Integer, Double> diagonalElements, ParallelUtils utils) {
+    public List<Double> solve(int threads, ExecutorService executorService, List<Double> firstGuess,
+            Map<Integer, Map<Integer, Double>> records,
+            Map<Integer, Double> diagonalElements, ParallelUtils utils) {
         AtomicReferenceArray<Double> x = new AtomicReferenceArray<>(firstGuess.toArray(new Double[firstGuess.size()]));
         List<Double> previous = new ArrayList<>(firstGuess);
         boolean converged = false;
@@ -78,7 +79,7 @@ class ParallelSubmitter {
         }
         LOGGER.log(Level.INFO, String.format("Took %d iterations to converge", iterations));
         List<Double> values = new ArrayList<>();
-        for (int i = 0; i < x.length(); i++){
+        for (int i = 0; i < x.length(); i++) {
             values.add(x.get(i));
         }
         return atomicToList(x);
@@ -121,9 +122,9 @@ class ParallelSubmitter {
      * @param previous
      * @return
      */
-    private CountDownLatch submitTasks(ParallelUtils utils, int threads, Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements,
-                                       ExecutorService executorService, AtomicReferenceArray<Double> x, List<Double> previous
-    ) {
+    private CountDownLatch submitTasks(ParallelUtils utils, int threads, Map<Integer, Map<Integer, Double>> records,
+            Map<Integer, Double> diagonalElements,
+            ExecutorService executorService, AtomicReferenceArray<Double> x, List<Double> previous) {
 
         int scheduledThreads = x.length() < threads ? x.length() : threads;
         int split = x.length() / scheduledThreads;
@@ -131,7 +132,7 @@ class ParallelSubmitter {
 
         CountDownLatch latch = new CountDownLatch(scheduledThreads);
         //TODO: THis wont do the last one, so we want inclusive too?
-        int from  = 0;
+        int from = 0;
         for (int thread = 0; thread < scheduledThreads; thread++) {
             int to = from + split - 1 + (remaining > 0 ? 1 : 0);
             if (remaining > 0) {
@@ -143,7 +144,6 @@ class ParallelSubmitter {
         return latch;
     }
 
-
     /**
      * Since Java 7 does not support lambda functions this utilities class has to suffice as a method
      * for determining convergence of the steady state.
@@ -153,7 +153,7 @@ class ParallelSubmitter {
      */
     public interface ParallelUtils {
         boolean isConverged(List<Double> previousX, AtomicReferenceArray<Double> x,
-                            Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements);
+                Map<Integer, Map<Integer, Double>> records, Map<Integer, Double> diagonalElements);
 
         /**
          * Create a runnable item that perfoms a single iteration in the
@@ -167,7 +167,8 @@ class ParallelSubmitter {
          * @param diagonalElements
          * @return
          */
-        Runnable createRunnable(int from, int to, CountDownLatch latch, List<Double> previousX, AtomicReferenceArray<Double> x, Map<Integer, Map<Integer, Double>> records,
-                                Map<Integer, Double> diagonalElements);
+        Runnable createRunnable(int from, int to, CountDownLatch latch, List<Double> previousX,
+                AtomicReferenceArray<Double> x, Map<Integer, Map<Integer, Double>> records,
+                Map<Integer, Double> diagonalElements);
     }
 }

@@ -22,12 +22,12 @@ public final class GaussSeidelSolver extends AXEqualsBSolver {
      */
     @Override
     protected List<Double> solve(Map<Integer, Map<Integer, Double>> records,
-                                         Map<Integer, Double> diagonalElements) {
+            Map<Integer, Double> diagonalElements) {
 
         List<Double> x = initialiseXWithGuessList(records);
         boolean converged = false;
         int iterations = 0;
-        while(!converged) {
+        while (!converged) {
             for (Map.Entry<Integer, Map<Integer, Double>> entry : records.entrySet()) {
                 Integer state = entry.getKey();
                 double aii = diagonalElements.get(state);
@@ -41,7 +41,5 @@ public final class GaussSeidelSolver extends AXEqualsBSolver {
         LOGGER.log(Level.INFO, String.format("Took %d iterations to converge", iterations));
         return x;
     }
-
-
 
 }

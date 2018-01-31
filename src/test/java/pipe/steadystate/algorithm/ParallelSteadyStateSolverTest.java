@@ -34,7 +34,6 @@ public class ParallelSteadyStateSolverTest {
         when(builder.buildJacobi(any(ExecutorService.class), anyInt())).thenReturn(jacobiSolver);
     }
 
-
     /**
      * Since the Jacobi method transforms a CTMC A into a DTMC Q
      * and then solves for (I-Q)^Tx^T = 0
@@ -56,7 +55,6 @@ public class ParallelSteadyStateSolverTest {
         successors1.put(0, 1.0);
         records.add(new Record(1, successors1));
 
-
         solver.solve(records);
 
         verify(builder).buildJacobi(any(ExecutorService.class), eq(8));
@@ -76,9 +74,9 @@ public class ParallelSteadyStateSolverTest {
      * verify that both solvers are invoked.  
      */
     @Test
-    public void runsComboForNonDiagonallyDominantMatrix()  {
+    public void runsComboForNonDiagonallyDominantMatrix() {
         ParallelSteadyStateSolver solver = new ParallelSteadyStateSolver(8, builder);
-        solver.waitForAllSolversForTesting(true); 
+        solver.waitForAllSolversForTesting(true);
 
         List<Record> records = new ArrayList<>();
         Map<Integer, Double> successors0 = new HashMap<>();
@@ -89,7 +87,6 @@ public class ParallelSteadyStateSolverTest {
         successors1.put(0, 1.0);
         records.add(new Record(1, successors1));
 
-
         solver.solve(records);
 
         verify(builder).buildGaussSeidel();
@@ -97,6 +94,5 @@ public class ParallelSteadyStateSolverTest {
         verify(jacobiSolver).solve(records);
         verify(gsSolver).solve(records);
     }
-
 
 }

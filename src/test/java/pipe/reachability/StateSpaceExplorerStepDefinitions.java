@@ -69,9 +69,9 @@ public class StateSpaceExplorerStepDefinitions {
         utils = new TangibleAndVanishingUtils();
     }
 
-
     @Given("^I use the Petri net located at (/[\\w/]+.xml)$")
-    public void I_Use_the_Petri_net_located_at(String path) throws JAXBException, UnparsableException, FileNotFoundException {
+    public void I_Use_the_Petri_net_located_at(String path)
+            throws JAXBException, UnparsableException, FileNotFoundException {
         petriNet = Utils.readPetriNet(path);
     }
 
@@ -90,14 +90,15 @@ public class StateSpaceExplorerStepDefinitions {
     @When("^I generate the exploration graph (sequentially|in parallel) with a fully explored bound of (\\d+)$")
     public void I_generate_the_bounded_exploration_graph(String parallel, int bound)
             throws IOException, ExecutionException, InterruptedException, InvalidRateException {
-            ExplorerUtilities explorerUtilities = new BoundedExplorerUtilities(petriNet, bound);
-            processStateSpace(parallel, explorerUtilities);
+        ExplorerUtilities explorerUtilities = new BoundedExplorerUtilities(petriNet, bound);
+        processStateSpace(parallel, explorerUtilities);
     }
 
     @When("^I generate the coverability graph (sequentially|in parallel)$")
     public void I_generate_the_coverability_graph(String parallel)
             throws IOException, ExecutionException, InterruptedException, InvalidRateException {
-        ExplorerUtilities explorerUtilities = new CoverabilityExplorerUtilities(new UnboundedExplorerUtilities(petriNet));
+        ExplorerUtilities explorerUtilities = new CoverabilityExplorerUtilities(
+                new UnboundedExplorerUtilities(petriNet));
         processStateSpace(parallel, explorerUtilities);
     }
 

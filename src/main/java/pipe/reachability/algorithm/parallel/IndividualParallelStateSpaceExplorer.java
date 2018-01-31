@@ -38,7 +38,7 @@ public final class IndividualParallelStateSpaceExplorer extends AbstractStateSpa
      * @param explorerUtilities utilities 
      */
     public IndividualParallelStateSpaceExplorer(StateProcessor stateProcessor, VanishingExplorer vanishingExplorer,
-                                                ExplorerUtilities explorerUtilities) {
+            ExplorerUtilities explorerUtilities) {
         super(explorerUtilities, vanishingExplorer, stateProcessor);
         executorService = Executors.newFixedThreadPool(THREADS);
 
@@ -64,8 +64,8 @@ public final class IndividualParallelStateSpaceExplorer extends AbstractStateSpa
             CountDownLatch latch = new CountDownLatch(elemsAtCurrentLevel);
             for (int i = 0; i < elemsAtCurrentLevel; i++) {
                 ClassifiedState state = explorationQueue.poll();
-                successorFutures.put(state, executorService.submit(
-                        new ParallelStateExplorer(latch, state, explorerUtilities, vanishingExplorer)));
+                successorFutures.put(state, executorService
+                        .submit(new ParallelStateExplorer(latch, state, explorerUtilities, vanishingExplorer)));
             }
 
             latch.await();
